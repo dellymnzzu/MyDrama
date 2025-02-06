@@ -1,0 +1,17 @@
+html{
+position : relative;
+min-height:100%;
+margin:0;
+}
+
+body{
+min-height:100%;
+}
+
+.content{
+    max-width:1590px;
+    width:100%;
+    margin:0 auto;
+    padding:0 40px;
+
+}

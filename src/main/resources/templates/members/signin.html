@@ -1,0 +1,65 @@
+<!doctype html >
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>로그인</title>
+
+
+</head>
+<th:block layout:fragment="css">
+    <style>
+        button{
+        width:100%;
+        }
+    </style>
+</th:block>
+<body>
+
+
+<div layout:fragnebt="content">
+    <div class = "form-container">
+        <div class = "form-box">
+            <form action="/member/signin" method="post" >
+                <div class = "form-group">
+                    <!--아이디-->
+                    <input type = "text" class = "form-control" placeholder="아이디">
+                    <hr>
+                </div>
+                <div class = "form-group">
+                    <!--비밀번호-->
+                    <input type = "password"  class = "form-control" placeholder="비밀번호(영문대/소문자,숫자,특수문자 중 2가지 이상 조합하세요.)">
+                    <hr>
+                </div>
+
+                <div class="mt-4">
+                    <button class="btn btn-primary w-100 mb-2">로그인</button>
+                    <button type="button" class="btn btn-primary w-100" onclick="location.href='/member/signup'">회원가입</button>
+                </div>
+            </form>
+
+            <div class="login-buttons">
+                <a href="/oauth2/authorization/naver" class="btn naver">
+                    <img src="/img/logo/naver-logo.png" alt="Naver Logo">
+                </a>
+                <a href="/oauth2/authorization/kakao" class="btn kakao">
+                    <img src="/img/logo/kakao-logo.png" alt="Kakao Logo">
+                </a>
+                <a href="/oauth2/authorization/google" class="btn google">
+                    <img src="/img/logo/google-logo.png" alt="Google Logo">
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+</body>
+</html>
