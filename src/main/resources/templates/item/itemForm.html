@@ -1,0 +1,83 @@
+<!doctype html >
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>상품 업로드</title>
+
+
+</head>
+<th:block layout:fragment="css">
+  <style>
+    button{
+    width:100%;
+    }
+  </style>
+</th:block>
+<body>
+
+
+<div layout:fragment="content">
+  <div class = "select-container">
+    <div class = "select-group">
+      <h4>메인 카테고리별</h4>
+      <select th:field="*{mainCategory}" class = "form-select">
+        <option value = "CATEGORY">카테고리별</option>
+        <option value = "SKINCONCERN">피부고민별</option>
+      </select>
+    </div>
+
+    <div class = "select-group">
+      <h4>카테고리별</h4>
+      <select th:field="*{category}" class = "form-select">
+        <option value = "CLEAN">클렌징</option>
+        <option value = "TPM">토너,패드,미스트</option>
+        <option value = "AE">앰플,에센스</option>
+        <option value = "LCE">로션,크림,아이크림</option>
+        <option value = "SM">썬,메이크업</option>
+        <option value = "MP">마스크팩</option>
+        <option value = "HB">헤어/바디</option>
+        <option value = "LH">립,핸드</option>
+        <option value = "MEN">남성</option>
+      </select>
+    </div>
+
+    <div class = "select-group">
+      <h4>피부 고민</h4>
+      <select th:field="*{skinConcern}" class = "form-select">
+        <option value = "MM">수분/보습</option>
+        <option value = "SS">진정/민감</option>
+        <option value = "WT">미백/톤</option>
+        <option value = "EW">탄력/주름</option>
+        <option value = "PS">모공/피지</option>
+        <option value = "DS">각질/피부결</option>
+        <option value = "TS">고민성 피부</option>
+        <option value = "SUNCARE">선케어</option>
+      </select>
+    </div>
+
+    <div class = "select-group">
+      <h4>라인별</h4>
+      <select th:field="*{skinConcern}" class = "form-select">
+        <option value = "GALAC">갈락</option>
+        <option value = "BIFIDA">비피다</option>
+        <option value = "PC">퓨어 클렌징</option>
+        <option value = "PANTHETOIN">판테토인</option>
+        <option value = "VCOLLAGEN">V콜라겐</option>
+        <option value = "NOMERCY">노머시</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+</body>
+</html>

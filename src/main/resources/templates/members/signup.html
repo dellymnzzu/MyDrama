@@ -22,7 +22,7 @@
 <body>
 
 
-<div layout:fragnebt="content">
+<div layout:fragment="content">
     <div class = "form-container">
         <div class = "form-box">
             <form action="/member/signup" method="post" >
@@ -106,6 +106,8 @@
 
 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script>
+
+    //카카오 우편번호 API
     function sample6_execDaumPostcode() {
         new daum.Postcode({
             oncomplete: function(data) {

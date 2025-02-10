@@ -1,0 +1,28 @@
+<!doctype html >
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>이메일 찾기</title>
+</head>
+<div layout:fragment="content">
+
+    <h1>이메일 찾기</h1>
+    <form action = "/memeber/findEmail" method="post">
+        <label for="name">이름</label>
+        <input type = "text" id = "name" name = "name" required>
+        <br>
+        <label for = "email">이메일</label>
+        <input type="text" id = "email" name = "email" required>
+        <br>
+        <button type = "submit" class = "btn btn-primary mt-4 w-100">아이디 찾기</button>
+    </form>
+
+</div>
+
+</html>

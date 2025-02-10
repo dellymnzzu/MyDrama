@@ -9,9 +9,17 @@ min-height:100%;
 }
 
 .content{
-    max-width:1590px;
-    width:100%;
+    width : 1509px;
     margin:0 auto;
-    padding:0 40px;
+    padding:0 0 0 0;
+    padding-top : 80px;
+
+}
+
+*{
+line-height:1.6;
+box-sizing:border-box;
+font-size : 18px;
+color : #3d3a35;
 
 }

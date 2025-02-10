@@ -40,7 +40,16 @@ public class Member {
     private Gender gender;  // 성별 (ENUM 타입)
 
     @Enumerated(EnumType.STRING)
-    private Role role;  //
+    private Role role;
+
+    @Column(length = 10, nullable = false)
+    private String zipcode; // 우편번호
+
+    @Column(length = 100,nullable = false)
+    private String address; // 기본주소
+
+    @Column(length = 100)
+    private String detailAddress;  // 상세주소
 
     @Column(nullable = false)
     private boolean mailingAgreement;  // 이메일 수신 동의
