@@ -16,6 +16,7 @@ import lombok.ToString;
 @NoArgsConstructor
 public class Member {
     @Id
+    @Column(name="member_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id; // 유저의 고유 아이디
 
