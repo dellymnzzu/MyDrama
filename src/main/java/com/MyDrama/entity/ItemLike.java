@@ -9,15 +9,14 @@ import java.time.LocalDateTime;
 public class ItemLike {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id;  // 고유 번호
     
     @ManyToOne
     @JoinColumn(name = "item_id")
-    private Item item;
+    private Item item;  // 아이템아이디
 
     @ManyToOne
     @JoinColumn(name="member_id")
-    private Member member;
-
+    private Member member;  // 멤버 아이디
     private LocalDateTime viewedAt; // 조회 시간
 }

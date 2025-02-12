@@ -1,0 +1,35 @@
+<!doctype html >
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>상품 조회</title>
+
+
+</head>
+<th:block layout:fragment="css">
+
+</th:block>
+<body>
+
+
+<div layout:fragment="content">
+ <input type = "hidden" id = "itemId" th:value = "${item.id}">
+  <div id = "itemImg">
+    <img th:src ="${itemFomDto.itemImgDto[0].imgUrl}" class = "reqImg" th:alt = "${item.itemNm}">
+  </div>
+  <div class = ""
+
+</div>
+
+
+
+
+
+</body>
+</html>

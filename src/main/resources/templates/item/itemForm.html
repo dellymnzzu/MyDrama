@@ -26,15 +26,16 @@
   <div class = "select-container">
     <div class = "select-group">
       <h4>메인 카테고리별</h4>
-      <select th:field="*{mainCategory}" class = "form-select">
+      <select  class = "form-select">
         <option value = "CATEGORY">카테고리별</option>
         <option value = "SKINCONCERN">피부고민별</option>
+        <option value = "LINE">라인별</option>
       </select>
     </div>
 
     <div class = "select-group">
       <h4>카테고리별</h4>
-      <select th:field="*{category}" class = "form-select">
+      <select  class = "form-select">
         <option value = "CLEAN">클렌징</option>
         <option value = "TPM">토너,패드,미스트</option>
         <option value = "AE">앰플,에센스</option>
@@ -49,7 +50,7 @@
 
     <div class = "select-group">
       <h4>피부 고민</h4>
-      <select th:field="*{skinConcern}" class = "form-select">
+      <select  class = "form-select">
         <option value = "MM">수분/보습</option>
         <option value = "SS">진정/민감</option>
         <option value = "WT">미백/톤</option>
@@ -63,7 +64,7 @@
 
     <div class = "select-group">
       <h4>라인별</h4>
-      <select th:field="*{skinConcern}" class = "form-select">
+      <select  class = "form-select">
         <option value = "GALAC">갈락</option>
         <option value = "BIFIDA">비피다</option>
         <option value = "PC">퓨어 클렌징</option>
@@ -80,7 +81,9 @@
     <span class = "input-group-text">제목</span>
   </div>
   <input type = "text" class = "form-control" placeholder="제목을 입력하세요.">
-  <textarea id="message" name="message" rows="4" cols="50"></textarea>
+  <input type="file" name="files" id="files" multiple="multiple" />  <!--multiple로 하게 되면 여러개의 이미지가 추가된다.-->
+  <img id="preview" src="" alt="이미지 미리보기" style="max-width: 300px; display: none;">
+  <textarea id="message" name="message" rows="4" cols="50"></textarea>  <!--텍스트 내용-->
   <button th:formaction="@{/admin/item/new}" type="submit" class="btn btn-primary">저장</button>
 
 </div>

@@ -9,7 +9,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class ItemImg {
+public class ItemImg extends BaseEntity {
     @Id
     @Column(name = "itemImg_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,10 +18,9 @@ public class ItemImg {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_id")
     private Item item;
-
-    private String itemImgUrl; // 썸네일 경로
-    private String itemImgName; // 썸네일 저장 이름
-    private String oriItemImgName; // 썸네일 본래 이름
+    private String itemImgUrl; // 아이템 이미지 url
+    private String itemImgName; // 아이템 저장 이름
+    private String oriItemImgName; // 아이템 본래 이름
 
     public void updateItemImg(String itemImgUrl, String itemImgName, String oriItemImgName){
         this.itemImgUrl = itemImgUrl;
