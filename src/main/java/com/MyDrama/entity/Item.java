@@ -2,6 +2,7 @@ package com.MyDrama.entity;
 
 import com.MyDrama.constant.*;
 import com.MyDrama.dto.ItemFormDto;
+import com.MyDrama.entity.BaseEntity;
 import com.MyDrama.exception.OutOfstockException;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -11,11 +12,10 @@ import lombok.ToString;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
+@Entity
 @Getter
 @Setter
 @ToString
-@Entity
 @Table(name = "item")
 public class Item extends BaseEntity {
     @Id

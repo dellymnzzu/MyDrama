@@ -3,6 +3,7 @@ package com.MyDrama.entity;
 
 import com.MyDrama.constant.Gender;
 import com.MyDrama.constant.Role;
+import com.MyDrama.dto.MemberFormDto;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -61,6 +62,13 @@ public class Member {
     private String provider; // 소셜 로그인 제공자 정보 (예 : 구글, 네이버 등)
 
     private String picture; // 소셜 로그인 사용자를 위한 필드
+
+
+    public static Member createMember(MemberFormDto memberFormDto){
+        Member member = new Member();
+        member.setUserId(memberFormDto.getUserId());
+        return member;
+    }
 }
 
 

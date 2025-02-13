@@ -5,6 +5,7 @@ import com.MyDrama.entity.Item;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -17,21 +18,20 @@ import java.util.List;
 
 @Getter
 @Setter
-@ToString
 public class ItemFormDto {
 
     private Long id;
 
-    @NotBlank(message = "상품명은 필수 입력 값입니다.")
+    @NotNull(message = "상품명은 필수 입력 값입니다.")
     private String title;
 
-    @NotBlank(message = "내용은 필수 입력 값입니다.")
+    @NotNull(message = "내용은 필수 입력 값입니다.")
     private String description;
 
-    @NotBlank(message = "가격은 필수 입력 값입니다.")
+    @NotNull(message = "가격은 필수 입력 값입니다.")
     private Integer price;
 
-    @NotBlank(message = "수량은 필수 입력 값입니다.")
+    @NotNull(message = "수량은 필수 입력 값입니다.")
     @Max(value = 999,message = "수량은 50개 이하여야합니다.")
     private int stockNumber;
 
