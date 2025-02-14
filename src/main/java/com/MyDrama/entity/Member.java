@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Entity
 @Getter
@@ -53,20 +54,31 @@ public class Member {
     @Column(length = 100)
     private String detailAddress;  // 상세주소
 
-    @Column(nullable = false)
-    private boolean mailingAgreement;  // 이메일 수신 동의
+    @Column(nullable = false,columnDefinition = "BOOLEAN DEFAULT false")
+    private boolean mailingAgreement = false;  // 이메일 수신 동의, 기본값 설정
 
-    @Column(nullable = false)
-    private boolean smsAgreement;  // SMS 수신 동의
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
+    private boolean smsAgreement = false;  // SMS 수신 동의
 
     private String provider; // 소셜 로그인 제공자 정보 (예 : 구글, 네이버 등)
 
     private String picture; // 소셜 로그인 사용자를 위한 필드
 
 
-    public static Member createMember(MemberFormDto memberFormDto){
+    public static Member createMember(MemberFormDto memberFormDto, PasswordEncoder passwordEncoder){
         Member member = new Member();
         member.setUserId(memberFormDto.getUserId());
+        String password = passwordEncoder.encode(memberFormDto.getPassword());
+        member.setPassword(password);  // 단방향 암호화
+        member.setTel(memberFormDto.getTel());
+        member.setName(memberFormDto.getName());
+        member.setEmail(memberFormDto.getEmail());
+        member.setGender(memberFormDto.getGender());
+        member.setZipcode(memberFormDto.getZipcode());
+        member.setRole(Role.USER);
+        member.setAddress(memberFormDto.getAddress());
+        member.setDetailAddress(memberFormDto.getDetailAddress());
+        member.setMailingAgreement(memberFormDto.isMailingAgreement());
         return member;
     }
 }

@@ -23,14 +23,14 @@ public class ItemController {
     private final ItemService itemService;
 
     //상품 등록 페이지 조회
-    @GetMapping(value = "/new")
+    @GetMapping(value = "/write")
     public String itemNew(Model model){
         model.addAttribute("itemFormDto", new ItemFormDto());
         return "item/itemForm";
     }
 
     //상품 등록
-    @PostMapping(value = "/new")
+    @PostMapping(value = "/write")
     public String itemNewForm(@Valid ItemFormDto itemFormDto, BindingResult bindingResult, Model model,
                               @RequestParam("itemImgFile")List<MultipartFile> itemImgFileList){
         //@RequestParam에는 이미지 파일 데이타가 들어간다.

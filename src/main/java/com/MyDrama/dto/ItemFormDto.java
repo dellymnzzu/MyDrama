@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.modelmapper.ModelMapper;
@@ -18,6 +19,7 @@ import java.util.List;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class ItemFormDto {
 
     private Long id;
@@ -62,6 +64,4 @@ public class ItemFormDto {
         // Item -> ITemFormDto 연결
         return modelMapper.map(item,ItemFormDto.class);
     }
-
-
 }
