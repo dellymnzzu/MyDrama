@@ -20,5 +20,10 @@ public class MainController {
         return "/main";
     }
 
+    @GetMapping(value = "/about/map")
+    public String map(){
+        return "about/kakaoApi";
+    }
+
 
 }

@@ -4,6 +4,7 @@ package com.MyDrama.entity;
 import com.MyDrama.constant.Gender;
 import com.MyDrama.constant.Role;
 import com.MyDrama.dto.MemberFormDto;
+import com.MyDrama.dto.MemberupdateDto;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -81,6 +82,23 @@ public class Member {
         member.setMailingAgreement(memberFormDto.isMailingAgreement());
         return member;
     }
+
+    public void updateMember(MemberupdateDto memberupdateDto){
+        this.name = memberupdateDto.getName();
+        this.email = memberupdateDto.getEmail();
+        this.tel = memberupdateDto.getTel();
+        this.zipcode = memberupdateDto.getZipcode();
+        this.address = memberupdateDto.getAddress();
+        this.detailAddress = memberupdateDto.getDetailAddress();
+        this.smsAgreement = memberupdateDto.isSmsAgreement();
+        this.mailingAgreement = memberupdateDto.isMailingAgreement();
+    }
+
+    public void updatePassword(MemberFormDto memberFormDto,PasswordEncoder passwordEncoder){
+        String newPassword =passwordEncoder.encode(memberFormDto.getPassword());
+        this.password = newPassword;
+    }
+
 }
 
 
