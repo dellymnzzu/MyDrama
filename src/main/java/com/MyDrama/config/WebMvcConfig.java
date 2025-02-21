@@ -3,17 +3,25 @@ package com.MyDrama.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import com.MyDrama.service.VisitorService;
+
 @Configuration
+@RequiredArgsConstructor
 public class WebMvcConfig implements WebMvcConfigurer {
+
+    private final VisitorService visitorService;
     @Value("${uploadPath}")  // 프로퍼티에 있는 uploadPath 경로를
     String uploadPath;  // 가지고 있다.
     //uploadPath = "C:/drama  -> 원래 경로지만
     //image/item/XXX.jpg로 나오게 된다.
     // image는 C:/drama라고 생각하면 된다.
+
+    private final VisitorInterceptor visitorInterceptor;
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry){
@@ -21,4 +29,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .addResourceLocations(uploadPath);  //로컬 컴퓨터에서 root 경로를 설정
     }
 
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(new VisitorInterceptor(visitorService))
+              .addPathPatterns("/**");
+    }
 }
