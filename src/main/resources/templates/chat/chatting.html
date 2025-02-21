@@ -1,0 +1,470 @@
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>1:1 WebSocket Chat</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/sockjs/1.1.4/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+<style>
+    /* 기본 설정 */
+  body {
+    background-color: #141414; /* 넷플릭스와 유사한 검은색 배경 */
+    color: #ffffff; /* 텍스트 색상을 흰색으로 설정 */
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+  }
+
+  .chat-room {
+    max-width: 400px;  /* 채팅방 전체 너비 축소 */
+    width: 90%;        /* 모바일 대응 */
+    margin: 0 auto;
+    background: #1e1e1e;
+    height: 550px;     /* 채팅방 높이 축소 */
+    position: fixed;   /* 화면에 고정 */
+    top: 50%;         /* 수직 중앙 정렬 */
+    left: 50%;        /* 수평 중앙 정렬 */
+    transform: translate(-50%, -50%);  /* 정확한 중앙 배치 */
+    border-radius: 10px;  /* 모서리 둥글게 */
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);  /* 그림자 효과 */
+    display: flex;
+    flex-direction: column;
+  }
+
+  .chat-header {
+    background: #222;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #333;
+    border-radius: 10px 10px 0 0;  /* 상단 모서리만 둥글게 */
+  }
+
+  .chat-header h1 {
+    font-size: 1.2rem;
+    margin: 0;
+    color: #fff;
+  }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    height: 450px;  /* 헤더와 입력창 높이를 제외한 높이 */
+  }
+
+  .message {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .message.sent {
+    flex-direction: row-reverse;
+  }
+
+  .message-email {
+    font-size: 0.8rem;
+    color: #999;
+    margin-bottom: 4px;
+  }
+
+  .message-bubble {
+    padding: 12px 16px;
+    border-radius: 20px;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    max-width: 250px;  /* 메시지 버블 최대 너비 제한 */
+  }
+
+  .message.received .message-bubble {
+    background: #333;
+    border-top-left-radius: 5px;
+  }
+
+  .message.sent .message-bubble {
+    background: #6a0dad;
+    border-top-right-radius: 5px;
+  }
+
+  .chat-input-container {
+    background: #222;
+    padding: 15px;
+    display: flex;
+    gap: 10px;
+    border-top: 1px solid #333;
+    border-radius: 0 0 10px 10px;  /* 하단 모서리만 둥글게 */
+  }
+
+  .chat-input {
+    flex: 1;
+    background: #333;
+    border: none;
+    border-radius: 20px;
+    padding: 12px 20px;
+    color: #fff;
+    font-size: 0.95rem;
+  }
+
+  .chat-input:focus {
+    outline: none;
+    background: #444;
+  }
+
+  .send-button {
+    font-size: 14px;
+    background: #6a0dad;
+    border: none;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .send-button:hover {
+    background: #7b1fab;
+  }
+
+  .send-button:disabled {
+    background: #333;
+    cursor: not-allowed;
+  }
+
+  /* 헤더 스타일 */
+  h1 {
+    text-align: center;
+    padding: 20px;
+    font-size: 2rem;
+    margin-bottom: 30px;
+  }
+
+  .chat-container {
+    background-color: #1e1e1e;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 800px;
+    display: flex;
+    flex-wrap: wrap; /* 작은 화면에서 요소가 줄 바꿈되도록 설정 */
+    gap: 10px; /* 요소 간격 */
+    justify-content: center; /* 중앙 정렬 */
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .chat-container label {
+    margin-right: 10px; /* 라벨과 입력 필드 사이 간격 */
+    font-weight: bold;
+  }
+
+  .chat-container input, .chat-container select, .chat-container button {
+    flex: 1; /* 입력 필드와 선택박스의 크기 조절 */
+    max-width: 300px; /* 최대 너비 설정 */
+  }
+
+  .chat-container div {
+    display: flex; /* 각 그룹을 가로로 정렬 */
+    align-items: center; /* 세로 중앙 정렬 */
+    margin-bottom: 10px;
+  }
+
+  /* 입력 영역 스타일 */
+  label {
+    display: block;
+    margin: 10px 0 5px;
+    font-weight: bold;
+  }
+
+  input, select, button {
+    background-color: #333;
+    border: 2px solid #444;
+    border-radius: 5px;
+    padding: 12px 15px;
+    font-size: 14px;
+    background-color: #333;
+    color: #fff;
+    transition: border-color 0.3s;
+  }
+
+  input:focus, select:focus {
+    border-color: #e50914;
+    outline: none;
+  }
+
+  button {
+    padding: 12px 25px;
+    font-size: 14px;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  button:hover {
+    background-color: #ff0f1f;
+    transform: translateY(-2px);
+  }
+
+  /* 채팅 메시지 테이블 */
+  #conversation {
+    width: 100%;
+    margin: 20px 0;
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: #222;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  }
+
+  #conversation th, #conversation td {
+    border: 1px solid #333;
+    padding: 10px;
+    text-align: left;
+  }
+
+  #conversation th {
+    background-color: #444;
+    color: #fff;
+    font-weight: bold;
+  }
+
+  #conversation tbody tr:nth-child(odd) {
+    background-color: #2a2a2a;
+  }
+
+  #conversation tbody tr:nth-child(even) {
+    background-color: #1a1a1a;
+  }
+
+  /* 채팅 메시지 출력 */
+  #chatMessages td {
+    padding: 15px;
+    border-bottom: 1px solid #333;
+  }
+
+  #chatMessages tr:last-child td {
+    border-bottom: none;
+  }
+
+  .message-content {
+    border-radius: 15px;
+    display: inline-block;
+    max-width: 80%;
+  }
+
+  .message-sender {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+
+
+  /* 미디어 쿼리 */
+  @media (max-width: 768px) {
+
+
+    #conversation {
+      width: 95%;
+    }
+  }
+
+  #disconnect {
+    background-color: #333;
+  }
+
+  #disconnect:hover {
+    background-color: #444;
+  }
+
+</style>
+
+<script th:inline="javascript">
+    // stompClient는 WebSocket 연결을 관리하는 객체
+  var stompClient = null;
+
+  // roomId와 userIdName 변수 설정
+  var roomId = /*[[${roomId}]]*/ "";
+  let userIdName = /*[[${memberUser.name}]]*/ "";  // 멤버의 이름을 사용
+
+  $(document).ready(function() {
+  console.log(userIdName + " : 멤버이름");
+    // 페이지 로드 시 자동으로 연결
+    connect();
+
+    // 'send' 버튼 클릭 시 메시지 전송
+    $("#send").click(function() {
+        sendMessage();
+    });
+
+    // Enter 키를 누르면 메시지 전송
+    $("#message").keypress(function(e) {
+        if (e.which == 13) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    // 폼 submit 기본 동작 방지
+    $("form").on('submit', function (e) {
+        e.preventDefault();
+    });
+  });
+
+  // 연결 상태에 따라 'send' 버튼을 활성화/비활성화
+  function setConnected(connected) {
+    $("#send").prop("disabled", !connected);
+  }
+
+  // WebSocket 연결을 위한 함수
+  function connect() {
+    var socket = new SockJS('/app/gs-guide-websocket');  // SockJS를 사용하여 WebSocket 연결 생성
+    stompClient = Stomp.over(socket);  // STOMP 프로토콜을 사용하여 연결
+    stompClient.connect({}, function (frame) {
+        setConnected(true);  // 연결이 성공하면 'send' 버튼 활성화
+        console.log('Connected: ' + frame);  // 디버깅용 연결 상태 출력
+
+        var userEmail = /*[[${memberUser.email}]]*/ "";  // 서버에서 사용자 이메일을 가져옴
+        $("#memberEmail").val(userEmail);  // 사용자 이메일을 숨겨진 필드에 설정
+
+        // 해당 roomId에 대한 채팅 메시지 구독
+        stompClient.subscribe('/topic/'+roomId, function(chatMessage) {
+            showMessage(JSON.parse(chatMessage.body));  // 메시지를 받으면 처리
+        });
+    }, function(error) {
+        console.log('STOMP error: ' + error);  // 연결 에러 발생 시 출력
+        setTimeout(connect, 5000);  // 5초 후 자동 재시도
+    });
+  }
+
+  // 메시지 전송 함수
+  function sendMessage() {
+    var message = $("#message").val().trim();  // 입력된 메시지
+    var senderRole = $("#role").val();  // 사용자 역할
+
+    // 메시지가 비어있는 경우 처리
+    if (!message) {
+        alert("메시지를 입력해주세요.");
+        return;
+    }
+
+    // 채팅 메시지 객체 생성
+    var chatMessage = {
+        sender: userIdName,
+        senderRole: senderRole,
+        message: message
+    };
+
+    // WebSocket을 통해 메시지 전송
+    stompClient.send("/app/"+roomId, {}, JSON.stringify(chatMessage));
+    $("#message").val("");  // 메시지 입력 필드 초기화
+  }
+
+  // 채팅 메시지 표시 함수
+  function showMessage(chatMessage) {
+    if (chatMessage.error) {
+        console.error(chatMessage.message);
+        alert(chatMessage.message);
+        return;
+    }
+
+    var sender = chatMessage.sender || userIdName;
+    var message = chatMessage.message;
+
+    var messageHtml = '<div class="message ' + (sender === userIdName ? 'sent' : 'received') + '">' +
+        '<div class="message-content">' +
+        '<div class="message-email">' + sender + '</div>' +
+        '<div class="message-bubble">' + message + '</div>' +
+        '</div>' +
+        '</div>';
+
+    $("#chatMessages").append(messageHtml);
+    $("#chatMessages").scrollTop($("#chatMessages")[0].scrollHeight);
+  }
+
+  // 연결 종료 함수
+  function disconnect() {
+      if (stompClient !== null) {
+          // 채팅방 나가기 메시지 전송
+          const exitMessage = {
+              sender: userIdName,
+              type: 'LEAVE',
+              roomId: roomId
+          };
+
+          try {
+              stompClient.send("/app/chat/" + roomId, {}, JSON.stringify(exitMessage));
+              stompClient.disconnect();
+              console.log("Disconnected");
+
+              // 약간의 지연 후 리다이렉트
+              setTimeout(() => {
+                  window.close();
+                  // 관리자인 경우 관리자 채팅 목록으로, 아닌 경우 홈으로 리다이렉트
+                  if (userIdName === "관리자") {
+                      window.location.href = "/admin/chat-list";
+                  } else {
+                      window.location.href = "/";
+                  }
+              }, 500);
+          } catch (error) {
+              console.error("Disconnect error:", error);
+              // 에러 발생시에도 동일한 로직 적용
+              if (userIdName === "관리자") {
+                  window.location.href = "/admin/chat/list";
+              } else {
+                  window.location.href = "/";
+              }
+          }
+      }
+  }
+
+  // 채팅방 나가기 버튼 클릭 이벤트
+  document.querySelector('#disconnect').addEventListener('click', function() {
+      const confirmExit = confirm('채팅방을 나가시겠습니까?');
+      if (confirmExit) {
+          disconnect();
+      }
+  });
+
+  // 브라우저 창이 닫힐 때도 연결 해제
+  window.addEventListener('beforeunload', function(e) {
+      disconnect();
+  });
+</script>
+
+<div class="chat-room">
+    <div class="chat-header">
+        <h1 th:text="${userName}"></h1>
+        <button id="disconnect" onclick="disconnect()">채팅 종료</button>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+        <!-- 기존 메시지 (DB에서 가져온 메시지) -->
+        <div th:each="msg : ${messages}"
+             th:with="isSentByMe=${msg.sender == memberUser.name}"
+             th:class="${isSentByMe ? 'message sent' : 'message received'}">
+            <div class="message-content">
+                <div class="message-email" th:text="${msg.sender}"></div>
+                <div class="message-bubble" th:text="${msg.message}"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-input-container">
+        <input type="text" id="message" class="chat-input"
+               placeholder="메시지를 입력하세요..." autocomplete="off">
+        <button id="send" class="send-button" disabled>전송
+        </button>
+    </div>
+</div>
+</html>
