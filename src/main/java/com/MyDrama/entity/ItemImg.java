@@ -16,9 +16,9 @@ public class ItemImg extends BaseEntity {
     private Long id;
 
 
-    private String itemImgUrl; // 아이템 이미지 url
-    private String itemImgName; // 아이템 저장 이름
-    private String oriItemImgName; // 아이템 본래 이름
+    private String imgUrl; // 아이템 이미지 url
+    private String imgName; // 아이템 저장 이름
+    private String oriImgName; // 아이템 본래 이름
     private String repImgYn; //대표이미지
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_id")
@@ -26,9 +26,9 @@ public class ItemImg extends BaseEntity {
 
 
     //업데이트를 명령문을 내리지 않아도 업데이트가 자동으로 되는 이유 : 변경감지를 때문에
-    public void updateItemImg(String itemImgUrl, String itemImgName, String oriItemImgName){
-        this.itemImgUrl = itemImgUrl;
-        this.itemImgName = itemImgName;
-        this.oriItemImgName = oriItemImgName;
+    public void updateItemImg(String imgUrl, String imgName, String oriImgName){
+        this.imgUrl = imgUrl;
+        this.imgName = imgName;
+        this.oriImgName = oriImgName;
     }
 }

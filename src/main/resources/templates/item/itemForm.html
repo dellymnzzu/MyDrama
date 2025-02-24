@@ -8,6 +8,8 @@
   <meta name="viewport"
         content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+  <meta name="_csrf_header" th:content="${_csrf.headerName}">
   <title>상품 업로드</title>
 
 
@@ -54,6 +56,39 @@
            }
        });
    }
+
+   function previewImages(event) {
+       const preview = document.getElementById('imagePreview');
+       preview.innerHTML = ''; // 기존 미리보기 초기화
+       const files = event.target.files;
+
+       if (files.length > 30) {
+           alert('이미지는 최대 30개까지만 선택 가능합니다.');
+           event.target.value = '';
+           return;
+       }
+
+       for (let i = 0; i < files.length; i++) {
+           const file = files[i];
+           if (!file.type.startsWith('image/')) {
+               alert('이미지 파일만 선택 가능합니다.');
+               event.target.value = '';
+               preview.innerHTML = '';
+               return;
+           }
+
+           const reader = new FileReader();
+           reader.onload = function(e) {
+               const img = document.createElement('img');
+               img.src = e.target.result;
+               img.style.maxWidth = '200px';
+               img.style.maxHeight = '200px';
+               img.className = 'me-2 mb-2';
+               preview.appendChild(img);
+           };
+           reader.readAsDataURL(file);
+       }
+   }
   </script>
 </th:block>
 
@@ -68,7 +103,7 @@
 
 
 <div layout:fragment="content">
-  <form role="form" class = "container" method="post" enctype="multipart/form-data" th:object="${itemFormDto}">
+  <form action = "/admin/item/new"role="form" class = "container" method="post" enctype="multipart/form-data" th:object="${itemFormDto}">
   <input type="hidden" th:field = "*{id}">
   <div class = "select-container">
     <div class = "select-group">
@@ -142,10 +177,15 @@
   <input type = "number" th:field = "*{stockNumber}" class = "form-control" placeholder="상품의 재고를 입력해주세요.">
   <p th:if="${#fields.hasErrors('stockNumber')}" th:errors="*{stockNumber}" class="fieldError">Incorrect data</p>
 
-  <div th:if="${#lists.isEmpty(itemFormDto.itemImgDtoList)}">  <!--이미지가 없는 경우-->
-    <div class = "row" th:each="num:${#numbers.sequence(1,5)}">
-      <img id="preview" src="" alt="이미지 미리보기" style="max-width: 300px; display: none;">
-      <input type="file" name="files" id="files" multiple="multiple" />  <!--multiple로 하게 되면 여러개의 이미지가 추가된다.-->
+  <div th:if="${#lists.isEmpty(itemFormDto.itemImgDtoList)}">
+    <div class="form-group">
+        <label for="files">상품 이미지</label>
+        <input type="file" name="itemImgFile" id="files" 
+               class="form-control" 
+               multiple="multiple" 
+               accept="image/*"
+               onchange="previewImages(event)"/>
+        <div id="imagePreview" class="mt-3 d-flex flex-wrap gap-2"></div>
     </div>
   </div>
 
@@ -161,11 +201,12 @@
   </div>
 
 
-  <textarea id="message" th:field="*{description}" name="message" rows="4" cols="50"></textarea>  <!--텍스트 내용-->
+  <textarea id="message" th:field="*{description}" name="message" rows="10" cols="50" 
+            placeholder="이미지를 선택하면 자동으로 이미지 태그가 추가됩니다."></textarea>
   <p th:if="${#fields.hasErrors('description')}" th:errors="*{description}" class="fieldError">Incorrect data</p>
 
   <div th:if="${#strings.isEmpty(itemFormDto.id)}" >
-    <button th:formaction = "@{/item/write}" type = "submit" class = "btn btn-primary">저장</button>
+    <button type = "submit" class = "btn btn-primary">저장</button>
   </div>
 
   <div th:unless="${#strings.isEmpty(itemFormDto.id)}" style="text-align : center">
@@ -176,7 +217,7 @@
 
 
 
-
+<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
 </form>
 </div>
 

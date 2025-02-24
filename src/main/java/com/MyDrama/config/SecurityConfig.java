@@ -33,8 +33,9 @@ public class SecurityConfig {
                 .ignoringRequestMatchers("/member/resetPassword")
         )
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/css/**", "/js/**","/img/**","/favicon.ico","/error").permitAll()
-                .requestMatchers("/","/member/**","/item/**","/images/**","/about/**","/chatbot/**").permitAll()
+                .requestMatchers("/css/**", "/js/**", "/img/**", "/favicon.ico", "/error").permitAll()
+                .requestMatchers("/item/**", "/images/**", "/notice/images/**", "/banner/images/**").permitAll()
+                .requestMatchers("/","/member/**","/about/**","/chatbot/**").permitAll()
                 .requestMatchers("/chat/**", "/create-room").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()

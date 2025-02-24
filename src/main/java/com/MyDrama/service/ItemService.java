@@ -3,6 +3,8 @@ package com.MyDrama.service;
 
 import com.MyDrama.dto.ItemFormDto;
 import com.MyDrama.dto.ItemImgDto;
+import com.MyDrama.dto.ItemSearchDto;
+import com.MyDrama.dto.MainItemDto;
 import com.MyDrama.entity.Item;
 import com.MyDrama.entity.ItemImg;
 import com.MyDrama.repository.ItemImgRepository;
@@ -11,6 +13,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,7 +29,7 @@ public class ItemService {
 
     private final ItemRepository itemRepository;
     private final ItemImgRepository itemImgRepository;
-    private final ItemImgService itemImgService;
+    private final ContentService contentService;
 
 
     //상품 저장
@@ -42,7 +45,7 @@ public class ItemService {
                 itemImg.setRepImgYn("Y");  //0이라면?
                 else
                     itemImg.setRepImgYn("N");
-                itemImgService.saveItemImg(itemImg,itemImgFileList.get(i));  // 이미지 저장 서비스 호출
+            contentService.saveItemImg(itemImg,itemImgFileList.get(i));  // 이미지 저장 서비스 호출
 
         }
         return item.getId();  // 저장된 상품 Id를 반환한다.
@@ -62,7 +65,6 @@ public class ItemService {
             ItemImgDto itemImgDto = ItemImgDto.of(itemImg);  // 엔티티를 DTO로 변환
             itemImgDtoList.add(itemImgDto);  // 변환된 DTO를 리스트에 추가
         }
-
         //상품 정보 조회(상품 ID로 상품 정보를 조회하는데 없다면 예외 발생한다. )
         Item item = itemRepository.findById(itemId).orElseThrow(EntityNotFoundException::new);
         // Item -> ItemFormDto modelMapper
@@ -78,10 +80,18 @@ public class ItemService {
         List<Long> itemImgIds = itemFormDto.getItemImgIds(); //수정할 이미지 Id목록 가져오기
 
         for(int i = 0; i<itemImgFileList.size();i++){  // 이미지 개수만큼 반복
-            itemImgService.updateItemImg(itemImgIds.get(i),itemImgFileList.get(i));  // 이미지 수정 서비스 호출
+            contentService.updateItemImg(itemImgIds.get(i),itemImgFileList.get(i));  // 이미지 수정 서비스 호출
         }
         return item.getId();  // 수정된 상품 ID 반환
     }
+    @Transactional(readOnly = true) // 쿼리문 실행 읽기만 한다.
+    public Page<Item> getAdminItemPage(ItemSearchDto itemSearchDto, Pageable pageable){
+        return itemRepository.getAdminItemPage(itemSearchDto,pageable);
+    }
 
+    @Transactional(readOnly = true)
+    public Page<MainItemDto> getMainItemPage(ItemSearchDto itemSearchDto, Pageable pageable){
+        return itemRepository.getMainItemPage(itemSearchDto, pageable);
+    }
 
 }

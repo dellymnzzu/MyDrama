@@ -28,6 +28,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Value("${noticeLocation}")
     String noticeLocation;
 
+    @Value("${itemImgLocation}")
+    String itemImgLocation;
+
     private final VisitorInterceptor visitorInterceptor;
 
     @Override
@@ -41,6 +44,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
         registry.addResourceHandler("/notice/**")
                 .addResourceLocations("file:///" + noticeLocation + "/");
+
+        registry.addResourceHandler("/item/**")
+        .addResourceLocations("file:///" + itemImgLocation + "/");
     }
 
     @Override
