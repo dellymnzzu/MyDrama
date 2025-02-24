@@ -2,6 +2,7 @@ package com.MyDrama.service;
 
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -32,4 +33,6 @@ public class FileService {
             log.info("파일이 존재하지 않습니다.");
         }
     }
+
+
 }

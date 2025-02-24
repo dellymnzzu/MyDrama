@@ -1,8 +1,10 @@
 package com.MyDrama.controller;
 
 import com.MyDrama.dto.BannerDto;
+import com.MyDrama.dto.NoticeDto;
 import com.MyDrama.entity.Banner;
 
+import com.MyDrama.service.NoticeService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +29,7 @@ public class AdminController {
     private final VisitorService visitorService;
     private final FileService fileService;
     private final BannerService bannerService;
+    private final NoticeService noticeService;
 
     @GetMapping("/dashboard")
     public String adminPage(Model model) {
@@ -126,6 +129,100 @@ public class AdminController {
         }
         return "redirect:/admin/banner/list";
     }
+
+
+    //공지사항 등록 페이지
+    @GetMapping("/notice/new")
+    public String notice(Model model) {
+        model.addAttribute("noticeDto", new NoticeDto());
+        return "notice/noticeForm";
+    }
+
+    //공지사항 등록 페이지
+    @PostMapping("/notice/new")
+    public String noticeForm(@Valid NoticeDto noticeDto,
+                             BindingResult bindingResult,
+                             @RequestParam("noticeImgFile") MultipartFile noticeImgFile,
+                             Model model) {
+        if(bindingResult.hasErrors()) {
+            return "notice/noticeForm";
+        }
+        if(noticeImgFile.isEmpty() && noticeDto.getId() == null) {
+            model.addAttribute("errorMessage", "이미지는 필수 입력 값입니다.");
+            return "notice/noticeForm";
+        }
+        try {
+            noticeService.saveNotice(noticeDto, noticeImgFile);
+        } catch(Exception e) {
+            model.addAttribute("errorMessage", "등록 중 에러가 발생하였습니다.");
+            return "notice/noticeForm";
+        }
+        return "redirect:/admin/notice/list";
+    }
+
+    //공지사항 리스트 페이지
+    @GetMapping("/notice/list")
+    public String noticeList(Model model) {
+        List<NoticeDto> noticeDtoList = noticeService.getNoticeList();
+        model.addAttribute("noticeDtoList", noticeDtoList);
+        return "notice/noticeList";
+    }
+
+    //공지사항 삭제
+    @DeleteMapping("/notice/{noticeId}")
+    @ResponseBody
+    public ResponseEntity deleteNotice(@PathVariable("noticeId") Long noticeId){
+        try{
+            noticeService.deleteNotice(noticeId);
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>("삭제 중 오류가 발생했습니다.", HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>("삭제완료",HttpStatus.OK);
+    }
+
+    //공지사항 업데이트 페이지
+    @GetMapping("/notice/{noticeId}/modify")
+    public String noticeModifyForm(@PathVariable("noticeId") Long noticeId, Model model) {
+        try {
+            NoticeDto noticeDto = noticeService.getNoticeDtl(noticeId);
+            model.addAttribute("noticeDto", noticeDto);
+            return "notice/noticeForm";
+        } catch(Exception e) {
+            model.addAttribute("errorMessage", "배너 정보를 불러오는데 실패했습니다.");
+            return "notice/noticeList";
+        }
+    }
+
+    //공지사항 업데이트
+    @PostMapping("/notice/{noticeId}/modify")
+    public String noticeUpdate(@PathVariable("noticeId") Long noticeId,
+                               @Valid NoticeDto noticeDto,
+                               BindingResult bindingResult,
+                               @RequestParam("noticeImgFile") MultipartFile noticeImgFile,
+                               Model model) {
+        // ID 설정
+        noticeDto.setId(noticeId);
+
+        if(bindingResult.hasErrors()) {
+            return "notice/noticeForm";
+        }
+
+        try {
+            noticeService.updateNotice(noticeDto, noticeImgFile);
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("errorMessage", "배너 수정 중 오류가 발생했습니다.");
+            return "notice/noticeForm";
+        }
+        return "redirect:/admin/notice/list";
+    }
+
+
+
+
+
+
 
 
 

@@ -25,6 +25,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Value("${bannerLocation}")
     String bannerLocation;
 
+    @Value("${noticeLocation}")
+    String noticeLocation;
+
     private final VisitorInterceptor visitorInterceptor;
 
     @Override
@@ -35,6 +38,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
         registry.addResourceHandler("/banner/**")
                 .addResourceLocations("file:///" + bannerLocation + "/");  
         // Linux/Mac의 경우: "file:" + bannerLocation + "/"
+
+        registry.addResourceHandler("/notice/**")
+                .addResourceLocations("file:///" + noticeLocation + "/");
     }
 
     @Override
