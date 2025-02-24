@@ -4,9 +4,12 @@ import com.MyDrama.dto.BannerDto;
 import com.MyDrama.dto.NoticeDto;
 import com.MyDrama.entity.Banner;
 
-import com.MyDrama.service.NoticeService;
+import com.MyDrama.service.*;
 import jakarta.validation.Valid;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,11 +17,9 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.MyDrama.service.VisitorService;
-import com.MyDrama.service.FileService;
-import com.MyDrama.service.BannerService;
-
 import lombok.RequiredArgsConstructor;
+
+import java.io.ByteArrayInputStream;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,6 +31,27 @@ public class AdminController {
     private final FileService fileService;
     private final BannerService bannerService;
     private final NoticeService noticeService;
+    private final ExcelService excelService;
+
+
+    //엑셀 다운로드
+    @GetMapping("/download")
+    public ResponseEntity<InputStreamResource> downloadExcel() {
+        try {
+            ByteArrayInputStream in = excelService.generateExcelReport();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Content-Disposition", "attachment; filename=content-analysis.xlsx");
+
+            return ResponseEntity
+                    .ok()
+                    .headers(headers)
+                    .contentType(MediaType.parseMediaType("application/vnd.ms-excel"))
+                    .body(new InputStreamResource(in));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 
     @GetMapping("/dashboard")
     public String adminPage(Model model) {

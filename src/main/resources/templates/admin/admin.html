@@ -68,6 +68,12 @@
 <div layout:fragment="content">
     <div class="admin-container">
         <h2 class="mb-4">관리자 대시보드</h2>
+
+        <div class="dashboard-header">
+            <div class="header-buttons">
+                <a href="/admin/download" class="btn btn-primary me-2">엑셀 다운로드</a>
+            </div>
+        </div>
         
         <div class="stats-grid">
             <div class="stats-card">
@@ -95,36 +101,44 @@
     </div>
     
     <script th:inline="javascript">
+        // 방문자 데이터
         const dailyStats = /*[[${recentDailyStats}]]*/ {};
         
+        // 데이터가 존재하는지 확인
         if (dailyStats && Object.keys(dailyStats).length > 0) {
-            const ctx = document.getElementById('visitorChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: Object.keys(dailyStats).reverse(),
-                    datasets: [{
-                        label: '일일 방문자 수',
-                        data: Object.values(dailyStats).reverse(),
-                        borderColor: '#2c3e50',
-                        tension: 0.1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: '최근 7일 방문자 통계'
-                        }
+            const ctx = document.getElementById('visitorChart');
+            if (ctx) {  // canvas 엘리먼트가 존재하는지 확인
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: Object.keys(dailyStats).reverse(),
+                        datasets: [{
+                            label: '일일 방문자 수',
+                            data: Object.values(dailyStats).reverse(),
+                            borderColor: '#2c3e50',
+                            tension: 0.1
+                        }]
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: '최근 7일 방문자 통계'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
                         }
                     }
-                }
-            });
+                });
+            } else {
+                console.error('Canvas element not found');
+            }
+        } else {
+            console.error('No data available');
         }
     </script>
 </div>
