@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+
+<head>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+</head>
+
+<div layout:fragment="content">
+    <div class="container my-5">
+        <h2 class="mb-4">Q&A 게시판</h2>
+
+        <!-- 검색 폼 -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <form class="d-flex" action="/qna/list" method="get">
+                    <input class="form-control me-2" type="search" name="keyword" placeholder="검색어를 입력하세요" aria-label="Search">
+                    <button class="btn btn-outline-success" type="submit">검색</button>
+                </form>
+            </div>
+            <div class="col-md-6 text-end">
+                <a th:href="@{/qna/create}" class="btn btn-primary">문의하기</a>
+            </div>
+        </div>
+
+        <!-- 게시글 목록 -->
+        <table class="table table-hover">
+            <thead class="table-light">
+            <tr>
+                <th scope="col" style="width: 10%">번호</th>
+                <th scope="col" style="width: 45%">제목</th>
+                <th scope="col" style="width: 15%">작성자</th>
+                <th scope="col" style="width: 15%">작성일</th>
+                <th scope="col" style="width: 15%">상태</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="question, status : ${questions}">
+                <td th:text="${questions.totalElements - (questions.number * questions.size) - status.index}"></td>
+                <td>
+                    <a th:href="@{/qna/detail/{id}(id=${question.id})}" 
+                       th:text="${question.title}" 
+                       class="text-decoration-none"></a>
+                </td>
+                <td th:text="${question.memberName}"></td>
+                <td th:text="${#temporals.format(question.createdTime, 'yyyy-MM-dd')}"></td>
+                <td>
+                    <span th:if="${question.status != null and question.status.name() == 'WAITING'}" 
+                          class="badge bg-warning">답변대기</span>
+                    <span th:if="${question.status != null and question.status.name() == 'COMPLETED'}" 
+                          class="badge bg-success">답변완료</span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- 페이징 -->
+        <nav aria-label="Page navigation" th:if="${questions.totalPages > 0}">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:classappend="${!questions.hasPrevious} ? 'disabled'">
+                    <a class="page-link" 
+                       th:href="@{/qna/list(page=${questions.number - 1})}"
+                       tabindex="-1">이전</a>
+                </li>
+                
+                <li class="page-item" 
+                    th:each="pageNumber : ${#numbers.sequence(0, questions.totalPages - 1)}"
+                    th:classappend="${pageNumber == questions.number} ? 'active'">
+                    <a class="page-link" 
+                       th:href="@{/qna/list(page=${pageNumber})}"
+                       th:text="${pageNumber + 1}"></a>
+                </li>
+                
+                <li class="page-item" th:classappend="${!questions.hasNext} ? 'disabled'">
+                    <a class="page-link" 
+                       th:href="@{/qna/list(page=${questions.number + 1})}">다음</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        $(document).ready(function() {
+            var errorMessage = [[${errorMessage}]];
+            if (errorMessage) {
+                alert(errorMessage);
+            }
+        });
+    </script>
+</th:block>
+
+</html>

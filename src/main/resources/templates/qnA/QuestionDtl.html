@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layouts/layout}">
+
+<head>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+</head>
+
+<div layout:fragment="content">
+    <div class="container my-5">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="mb-0" th:text="${question.title}"></h3>
+                <div>
+                    <span class="badge" 
+                          th:classappend="${question.status.name() == 'WAITING'} ? 'bg-warning' : 'bg-success'"
+                          th:text="${question.status.name() == 'WAITING'} ? '답변대기' : '답변완료'">
+                    </span>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="mb-4">
+                    <small class="text-muted">
+                        작성자: <span th:text="${question.memberName}"></span> |
+                        작성일: <span th:text="${#temporals.format(question.createdTime, 'yyyy-MM-dd HH:mm')}"></span>
+                    </small>
+                </div>
+                
+                <!-- 질문 내용 -->
+                <div class="question-content mb-5">
+                    <h5 class="card-title">질문 내용</h5>
+                    <p class="card-text" th:text="${question.content}"></p>
+                </div>
+
+                <!-- 답변 영역 -->
+                <div class="answer-section mt-5">
+                    <h5 class="card-title">답변</h5>
+                    
+                    <!-- 답변이 없고 관리자인 경우 답변 작성 폼 표시 -->
+                    <div th:if="${question.status.name() == 'WAITING'}" 
+                         sec:authorize="hasRole('ADMIN')" 
+                         class="answer-form mb-4">
+                        <form id="answerForm">
+                            <div class="form-group">
+                                <textarea class="form-control" id="answerContent" rows="5" 
+                                          placeholder="답변을 입력하세요"></textarea>
+                            </div>
+                            <button type="button" class="btn btn-primary mt-3" 
+                                    th:onclick="submitAnswer([[${question.id}]])">답변등록</button>
+                        </form>
+                    </div>
+
+                    <!-- 답변이 있는 경우 답변 내용 표시 -->
+                    <div th:if="${question.status.name() == 'COMPLETED'}" class="answer-content">
+                        <div class="card">
+                            <div class="card-body">
+                                <p class="card-text" th:text="${answer?.content}"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-footer">
+                <a th:href="@{/qna/list}" class="btn btn-secondary">목록으로</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        function submitAnswer(questionId) {
+            const token = $("meta[name='_csrf']").attr("content");
+            const header = $("meta[name='_csrf_header']").attr("content");
+            
+            const content = $("#answerContent").val();
+            if (!content.trim()) {
+                alert("답변 내용을 입력해주세요.");
+                return;
+            }
+
+            $.ajax({
+                url: `/admin/qna/answer/${questionId}`,
+                type: 'POST',
+                data: { content: content },
+                beforeSend: function(xhr) {
+                    xhr.setRequestHeader(header, token);
+                },
+                success: function(response) {
+                    alert(response);
+                    location.reload();
+                },
+                error: function(error) {
+                    alert("답변 등록에 실패했습니다.");
+                }
+            });
+        }
+    </script>
+</th:block>
+
+</html>
