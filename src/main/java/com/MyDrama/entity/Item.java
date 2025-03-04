@@ -56,8 +56,12 @@ public class Item extends BaseEntity {
     @OneToMany(mappedBy = "item" , cascade = CascadeType.ALL,orphanRemoval = true)
     private List<ItemLike> likeList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL,orphanRemoval = true)
-    private List<ItemImg> itemImg = new ArrayList<>();
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL)
+    @ToString.Exclude
+    private List<ItemImg> itemImgs = new ArrayList<>();
+
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments;
 
 
     public void updateItem(ItemFormDto itemFormDto){

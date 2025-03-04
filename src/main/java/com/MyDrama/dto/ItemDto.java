@@ -7,6 +7,8 @@ import com.MyDrama.entity.ItemLike;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import com.querydsl.core.annotations.QueryProjection;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,10 +16,12 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
+@NoArgsConstructor
 public class ItemDto {
 
     private Long id;
     private String title;
+    private String imgName;
     private String description;
     private Integer price;
     private MainCategory mainCategory;

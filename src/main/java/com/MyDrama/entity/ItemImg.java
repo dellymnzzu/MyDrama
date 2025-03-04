@@ -6,6 +6,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
+@Table(name="item_img")
 @Getter
 @Setter
 @ToString
@@ -20,8 +21,9 @@ public class ItemImg extends BaseEntity {
     private String imgName; // 아이템 저장 이름
     private String oriImgName; // 아이템 본래 이름
     private String repImgYn; //대표이미지
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_id")
+    @ToString.Exclude
     private Item item;
 
 
