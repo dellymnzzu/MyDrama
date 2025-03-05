@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>크롤링 아이템 목록</title>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+</head>
+<body>
+<h2>크롤링된 상품 목록</h2>
+<div th:each="item : ${items}">
+    <div class="item">
+        <img th:src="${item.imgUrl}" alt="상품 이미지">
+        <h3 th:text="${item.name}">상품명</h3>
+        <p th:text="${item.price}">가격</p>
+    </div>
+</div>
+</body>
+</html>

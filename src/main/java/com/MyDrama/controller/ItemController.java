@@ -112,19 +112,17 @@ public class ItemController {
 
     @GetMapping(value = "/item/{itemId}")
     public String itemDtl(Model model, @PathVariable("itemId") Long itemId, Principal principal) {
-        try {
-            ItemFormDto itemFormDto = itemService.getItemDtl(itemId);
-            model.addAttribute("item", itemFormDto);
-            
-            // 현재 로그인한 사용자 ID를 모델에 추가
-            if (principal != null) {
-                model.addAttribute("userId", principal.getName());
-            }
-            
-            return "item/itemDtl";
-        } catch (EntityNotFoundException e) {
-            model.addAttribute("errorMessage", "존재하지 않는 상품입니다.");
-            return "error/404";
+        ItemFormDto itemFormDto = itemService.getItemDtl(itemId);
+        model.addAttribute("item", itemFormDto);
+        
+        if (principal != null) {
+            Member member = memberService.findUserId(principal.getName());
+            model.addAttribute("currentUserId", member.getUserId());
+            model.addAttribute("currentUserName", member.getName());
+            model.addAttribute("currentUserTel", member.getTel());
+            model.addAttribute("userId", member.getUserId());
         }
+        
+        return "item/itemDtl";
     }
 }

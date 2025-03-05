@@ -12,6 +12,7 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 @Configuration
 @EnableWebSecurity
@@ -28,20 +29,27 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf
                 .ignoringRequestMatchers("/ws/**", "/topic/**", "/app/**", "/member/signin")
-                .ignoringRequestMatchers("/create-room", "/chat/**", "/admin/**", "/check-email", "/api/chatbot/**")
+                .ignoringRequestMatchers("/create-room", "/chat/**", "/admin/**", "/check-email", "/api/chatbot/**","/itemImg/**")
                 .ignoringRequestMatchers("/member/find-email", "/member/find-password")
                 .ignoringRequestMatchers("/member/resetPassword")
+                .ignoringRequestMatchers("/comment/**")  // 댓글 API 요청에 대해 CSRF 검사 제외
+                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
         )
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/css/**", "/js/**", "/img/**", "/favicon.ico", "/error").permitAll()
-                .requestMatchers("/item/**", "/images/**", "/notice/images/**", "/banner/images/**").permitAll()
-                .requestMatchers("/","/member/**","/about/**","/chatbot/**").permitAll()
+        .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/css/**", "/js/**","/buy/**", "/img/**","/crawling/**", "/favicon.ico","/qna/list", "/error").permitAll()
+                .requestMatchers("/", "/member/**", "/item/**","/items/**", "/itemImg/**", "/banner/**", "/notice/**", "/about/**", "/chatbot/**").permitAll()
                 .requestMatchers("/chat/**", "/create-room").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/templates/cart/**").authenticated()
+                .requestMatchers("/comment/list/**").permitAll() // 댓글 목록 조회는 모든 사용자에게 허용
+                .requestMatchers("/comment/new").authenticated() // 댓글 작성은 인증된 사용자만
+                .requestMatchers("/comment/delete/**").authenticated() // 댓글 삭제는 인증된 사용자만
+                .requestMatchers("/cart/**").authenticated()  // 장바구니는 인증된 사용자만
                 .anyRequest().authenticated()
             )
             .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/member/findEmail")  // findEmail 요청에 대해 CSRF 검증 제외
+                .ignoringRequestMatchers("/member/**")
+                .ignoringRequestMatchers("/comment/**")
             );
         //로그인을 할 경우 로그인 페이지가 나오는 경우는 관리자가 하는거지만, submit으로 로그인을 하게 된다면, formLogin으로 들어가게 된다.
         http.formLogin(formLogin -> formLogin  // form 로그인 경우 여기로 온다.

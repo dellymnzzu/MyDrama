@@ -1,10 +1,141 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
 <head>
   <meta name="_csrf" th:content="${_csrf.token}"/>
   <meta name="_csrf_header" th:content="${_csrf.headerName}">
   <meta charset="UTF-8">
-  <title>Title</title>
+  <title>MyDrama</title>
+  <style>
+    /* 전체 레이아웃 */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* 상단 네비게이션 */
+    .top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .nav-links a {
+      color: #333;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    /* 상품 그리드 */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-top: 30px;
+    }
+
+    .product-card {
+      border: 1px solid #eee;
+      padding: 10px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .product-card:hover {
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .product-img {
+      width: 100%;
+      height: 300px;
+      object-fit: cover;
+    }
+
+    .product-title {
+      font-size: 16px;
+      margin: 10px 0;
+      color: #333;
+    }
+
+    .product-price {
+      font-size: 18px;
+      color: #ff4a4a;
+      font-weight: bold;
+    }
+
+    /* 페이지네이션 */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 30px;
+    }
+
+    .pagination .page-link {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      color: #333;
+      text-decoration: none;
+    }
+
+    .pagination .active .page-link {
+      background-color: #333;
+      color: white;
+      border-color: #333;
+    }
+
+    /* 검색 폼 */
+    .search-form {
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    .search-input {
+      padding: 10px;
+      width: 300px;
+      border: 1px solid #ddd;
+    }
+
+    /* 유틸리티 버튼 */
+    .util-buttons {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .util-button {
+      padding: 8px 15px;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      color: #333;
+      cursor: pointer;
+    }
+
+    .util-button:hover {
+      background-color: #f5f5f5;
+    }
+
+    /* 채팅 아이콘 */
+    .chat-icon {
+      position: fixed;
+      right: 30px;
+      bottom: 30px;
+      background-color: #333;
+      color: white;
+      padding: 15px;
+      border-radius: 50%;
+      text-decoration: none;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+  </style>
 </head>
 <body>
 <div layout:fragment="content">
@@ -12,66 +143,146 @@
   <div th:if="${mainDto != null}">
     <p th:text="'환영합니다, ' + ${mainDto.userId} + '님'"></p>
   </div>
+  <input type="hidden" name="searchQuery" th:value="${itemSearchDto.searchQuery}">
+  <div th:if="${not #strings.isEmpty(itemSearchDto.searchQuery)}" class="center">
+    <p class="h3 font-weight-bold" th:text="${itemSearchDto.searchQuery} + '검색결과'"></p>
+  </div>
+
   <a class="dropdown-item" href="/member/mypage">마이페이지</a>
   <a class="dropdown-item" href="/member/signin">로그인</a>
   <a class="chat-icon" href="/chatbot">챗봇</a>
   <a class="chat-icon" href="/member/findPassword">비밀번호찾기</a>
   <a class="chat-icon" href="/member/findEmail">이메일찾기</a>
   <a class="chat-icon" href="/about/map">지도맵</a>
-  <a class="chat-icon" href="/admin">관리자 페이지지</a>
+  <a class="chat-icon" href="/admin/dashboard">관리자 페이지지</a>
   <button id="chatButton" class="icon headset-icon">채팅 클릭</button>
+  <a class="chat-icon" href="/admin/banner/list">배너리스트</a>
+  <a class="chat-icon" href="/admin/notice/list">공지사항리스트</a>
+  <a class="chat-icon" href="/admin/item/new">아이템</a>
+
+  <div class="container text-center">
+    <div class="row row-cols-5">
+      <th:block th:each="item, status: ${mainItems.getContent()}">
+        <div class="col">
+          <div class="card">
+            <a th:href="'/item/' + ${item.id}" class="text-dark">
+              <div style="position: relative; width: 100%; height: 400px;">
+                <!-- 로딩 중 표시할 스피너 -->
+
+                <!-- 실제 이미지 -->
+                <img th:src="@{'/itemImg/' + ${item.imgName}}"
+                     class="card-img-top"
+                     th:alt="${item.title}"
+                     height="400"
+                     th:id="'image-' + ${item.id}"
+                     onload="hideLoader(this)">
+            </div>
+              <div class="card-body">
+                <h4 class="card-title">[[${item.title}]]</h4>
+                <h3 class="card-title text-danger">[[${item.price}]]원</h3>
+              </div>
+            </a>
+          </div>
+        </div>
+      </th:block>
+    </div>
+  </div>
+
+
+
+  <h2 class="text-center">크롤링된 상품 목록</h2>
+  
+  <div class="row">
+      <div class="col-md-3 mb-4" th:each="item : ${crawledItems}">
+          <div class="card h-100">
+              <img th:src="${item.imgUrl}" class="card-img-top" alt="상품 이미지">
+              <div class="card-body">
+                  <h5 class="card-title" th:text="${item.name}">상품명</h5>
+                  <p class="card-text" th:text="${item.price}">가격</p>
+              </div>
+          </div>
+      </div>
+  </div>
+  
+  <!-- 상품이 없을 경우 표시할 메시지 -->
+  <div class="text-center" th:if="${#lists.isEmpty(crawledItems)}">
+      <p>크롤링된 상품이 없습니다.</p>
+  </div>
+
+  <div th:with="start=${(mainItems.number/maxPage)*maxPage +1},
+  end=(${(mainItems.totalPages == 0) ? 1 : (start + (maxPage-1) < mainItems.totalPages ?
+  start + (maxPage - 1) : mainItems.totalPages)})">
+<ul class="pagination justify-content-center">
+<li class="page-item" th:classappend="${mainItems.number eq 0}?'disabled'">
+  <a th:href="@{'/' + '?searchQuery=' + ${itemSearchDto.searchQuery} + '&page=' + ${mainItems.number-1}}"
+     aria-label='Previous' class="page-link">
+    <span aria-hidden="true">Previous</span>
+  </a>
+</li>
+<li class="page-item" th:each="page: ${#numbers.sequence(start,end)}"
+    th:classappend="${mainItems.number eq page-1}?'active':''">
+  <a th:href="@{'/' + '?searchQuery=' + ${itemSearchDto.searchQuery} + '&page=' +${page -1}}"
+     th:inline="text" class="page-link">[[${page}]]</a>
+</li>
+<li class="page-item" th:classappend="${mainItems.number+1 ge mainItems.totalPages}?'disabled'">
+  <a th:href="@{'/' + '?searchQuery=' + ${itemSearchDto.searchQuery} + '&page=' + ${mainItems.number + 1}}"
+     aria-label="Next" class="page-link">
+    <span aria-hidden="true">Next</span>
+  </a>
+</li>
+</ul>
+</div>
+
 </div>
 
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.js"></script>
 <script th:inline="javascript">
-document.addEventListener('DOMContentLoaded', function() {
-    var roomId = /*[[${mainDto?.id}]]*/ null;  // mainDto가 null일 수 있으므로 안전한 접근
-    console.log("memberId: " + roomId);
-
+  document.addEventListener('DOMContentLoaded', function() {
+    var roomId = /*[[${mainDto?.id}]]*/ null;  
+    
     const chatButton = document.getElementById('chatButton');
     if (chatButton) {
         chatButton.addEventListener('click', function() {
             if (!roomId) {
-                alert('로그인이 필요합니다.');
-                window.location.href = '/member/signin';
+                window.location.href = '/member/signin';  // 로그인 페이지로 리다이렉트
                 return;
             }
 
             const token = document.querySelector("meta[name='_csrf']").getAttribute("content");
             const header = document.querySelector("meta[name='_csrf_header']").getAttribute("content");
 
-            // 서버에 전송할 데이터 준비
-            const data = { memberId: roomId };
-            
-            // 채팅방 생성 API 호출
-            fetch('/create-room', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
+              // 서버에 전송할 데이터 준비
+              const data = { memberId: roomId };
+
+              // 채팅방 생성 API 호출
+              fetch('/create-room', {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
                     [header]: token
-                },
-                body: JSON.stringify(data)
-            })
+                  },
+                  body: JSON.stringify(data)
+              })
             .then(response => {
-                if (!response.ok) {
+                  if (!response.ok) {
                     return response.text().then(text => {
                         throw new Error(text);
                     });
-                }
-                return response.json();
-            })
-            .then(roomId => {
-                const screenWidth = window.screen.width;
-                const windowWidth = 400;
-                const windowHeight = 600;
-                const left = screenWidth - windowWidth;
+                  }
+                  return response.json();
+              })
+              .then(roomId => {
+                  const screenWidth = window.screen.width;
+                  const windowWidth = 400;
+                  const windowHeight = 600;
+                  const left = screenWidth - windowWidth;
                 window.open('/chat/' + roomId, '_blank', 
                     `width=${windowWidth},height=${windowHeight},left=${left},top=100`);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('채팅방 생성에 실패했습니다.');
-            });
+              })
+              .catch(error => {
+                  console.error('Error:', error);
+                  alert('채팅방 생성에 실패했습니다.');
+              });
         });
     }
 
@@ -87,7 +298,7 @@ document.addEventListener('DOMContentLoaded', function() {
             window.open('/chatbot', '_blank', `width=${windowWidth},height=${windowHeight},left=${left},top=100,location=no,menubar=no,status=no,toolbar=no`);
         });
     }
-});
+  });
 </script>
 </body>
 </html>

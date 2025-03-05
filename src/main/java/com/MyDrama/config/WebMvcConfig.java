@@ -1,12 +1,18 @@
 package com.MyDrama.config;
 
 import lombok.RequiredArgsConstructor;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.resource.PathResourceResolver;
 
 import com.MyDrama.service.VisitorService;
 
@@ -31,7 +37,11 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Value("${itemImgLocation}")
     String itemImgLocation;
 
+    @Value("${chromeDriverPath}") // WebDriver 경로 추가
+    String chromeDriverPath;
+
     private final VisitorInterceptor visitorInterceptor;
+
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry){
@@ -45,8 +55,12 @@ public class WebMvcConfig implements WebMvcConfigurer {
         registry.addResourceHandler("/notice/**")
                 .addResourceLocations("file:///" + noticeLocation + "/");
 
-        registry.addResourceHandler("/item/**")
-        .addResourceLocations("file:///" + itemImgLocation + "/");
+        registry.addResourceHandler("/itemImg/**")
+                .addResourceLocations("file:" + itemImgLocation + "/");
+    
+                
+        // 디버깅용 로그
+        System.out.println("Item image location: " + itemImgLocation);
     }
 
     @Override
@@ -54,4 +68,20 @@ public class WebMvcConfig implements WebMvcConfigurer {
         registry.addInterceptor(new VisitorInterceptor(visitorService))
               .addPathPatterns("/**");
     }
+
+    @Bean
+    @Scope("prototype")
+    public WebDriver webDriver(){
+        System.setProperty("webdriver.chrome.driver",chromeDriverPath);
+        //크롬옵션 객체 생성
+        ChromeOptions options = new ChromeOptions();
+
+        // 헤드리스 모드 설정
+        options.addArguments("--headless");
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
+        // ChromeDriver 객체 생성 시 ChromeOptions 적용
+        return new ChromeDriver(options);
+    }
+
 }
