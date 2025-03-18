@@ -4,42 +4,52 @@
       layout:decorate="~{layouts/layout}">
 <head>
     <!-- CSRF 토큰 설정 -->
-    <meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}"/>
-    <meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}"/>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <meta id="userId" th:attr="data-value=${currentUserId}"/>
+    <meta id="userName" th:attr="data-value=${currentUserName}"/>
+    <meta id="userTel" th:attr="data-value=${currentUserTel}"/>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="https://cdn.iamport.kr/js/iamport.payment-1.2.0.js"></script>
 </head>
 
 <th:block layout:fragment="script">
     <script th:inline="javascript">
         // 현재 로그인한 사용자 ID
-        const currentUserId = [[${userId}]] || null;
+        const currentUserId = /*[[${userId}]]*/ null;
         
+        // 아임포트 초기화
+        var IMP;
         $(document).ready(function(){
+            IMP = window.IMP;
+            IMP.init("imp56360830"); // 가맹점 식별코드
+            
            calculateTotalPrice();
 
            $("#count").change(function(){
                calculateTotalPrice();
            });
 
-           // 이미지 로딩 완료 체크 (필요한 경우)
-           $('.repImg').on('load', function() {
-               $(this).show(); // 이미지 로딩이 완료되면 표시
-           }).on('error', function() {
-               console.error('이미지 로딩 실패');
-           });
+            // 이미지 로딩 완료 체크 (필요한 경우)
+            $('.repImg').on('load', function() {
+                $(this).show(); // 이미지 로딩이 완료되면 표시
+            }).on('error', function() {
+                console.error('이미지 로딩 실패');
+            });
 
-           // CSRF 토큰 설정
-           var token = $("meta[name='_csrf']").attr("content");
-           var header = $("meta[name='_csrf_header']").attr("content");
+            // CSRF 토큰 설정
+            var token = $("meta[name='_csrf']").attr("content");
+            var header = $("meta[name='_csrf_header']").attr("content");
 
-           
-           if(token && header) {
-               $(document).ajaxSend(function(e, xhr, options) {
-                   xhr.setRequestHeader(header, token);
-               });
-           }
+            if(token && header) {
+                $(document).ajaxSend(function(e, xhr, options) {
+                    xhr.setRequestHeader(header, token);
+                });
+            }
 
-           // 페이지 로드시 댓글 목록 불러오기
-           loadComments();
+            // 페이지 로드시 댓글 목록 불러오기
+            loadComments();
 
         });
 
@@ -51,346 +61,436 @@
         }
 
         function order(){
-            var token = $("meta[name='_csrf']").attr("content");
-            var header = $("meta[name='_csrf_header']").attr("content");
-
-            var url = "/order";
-            var paramData = {
-                itemId : $("#itemId").val(),
-                count : $("#count").val()
+            if(!currentUserId) {
+                alert('로그인 후 이용해주세요.');
+                location.href='/member/signin';
+                return;
             }
 
-            var param = JSON.stringify(paramData);
+            const currentUser = {
+                userId: $("#userId").attr("data-value"),
+                name: $("#userName").attr("data-value"),
+                tel: $("#userTel").attr("data-value")
+            };
+
+            const itemName = $(".h4").text();
+            const totalAmount = parseInt($("#totalPrice").text().replace('원', ''));
+            const count = $("#count").val();
+            const itemId = $("#itemId").val();
+
+            IMP.request_pay({
+                pg: "kakaopay",
+                pay_method: "card",
+                merchant_uid: "ORDER_" + new Date().getTime(),
+                name: itemName,
+                amount: totalAmount,
+                buyer_name: currentUser.name,
+                buyer_tel: currentUser.tel,
+                buyer_id: currentUser.userId
+            },
+            function(rsp) {
+                if (rsp.success) {
+                    const token = $("meta[name='_csrf']").attr("content");
+                    const header = $("meta[name='_csrf_header']").attr("content");
+
+                    const requestData = {
+                        itemId: itemId,
+                        count: count,
+                        itemName: itemName,
+                        impUid: rsp.imp_uid,
+                        merchantUid: rsp.merchant_uid,
+                        price: rsp.paid_amount,
+                        status: rsp.status,
+                        buyerName: currentUser.name,
+                        buyerId: currentUser.userId,
+                        buyerTel: currentUser.tel
+                    };
+
+                    $.ajax({
+                        url: "/payment/complete",
+                        type: "POST",
+                        contentType: "application/json",
+                        data: JSON.stringify(requestData),
+                        beforeSend: function(xhr) {
+                            xhr.setRequestHeader(header, token);
+                        },
+                        success: function(response) {
+                            alert("결제가 완료되었습니다.");
+                            location.href = "/payment/success";
+                        },
+                        error: function(jqXHR) {
+                            if(jqXHR.status == '401') {
+                                alert('로그인 후 이용해주세요.');
+                                location.href = '/member/signin';
+                            } else {
+                                alert(jqXHR.responseText || '결제 처리 중 오류가 발생했습니다.');
+                                location.href = "/payment/failure";
+                            }
+                        }
+                    });
+                } else {
+                    alert("결제에 실패하였습니다. " + rsp.error_msg);
+                    location.href = "/payment/failure";
+                }
+            });
+        }
+
+        function addCart(){
+            const paramData = {
+                itemId: parseInt($("#itemId").val()), // 문자열을 숫자로 변환
+                count: parseInt($("#count").val())  // 문자열을 숫자로 변환
+            };
+            
+            console.log("장바구니 요청 데이터:", paramData); // 디버깅용 로그 추가
 
             $.ajax({
-                url : url, // /order
-                type : "POST", // 형식 Post
-                contentType : "application/json",
-                data : param,
-                beforeSend : function(xhr){
-                    /*데이터 전송하기 전에 헤더이 csrf 값을 설정*/
+                url: "/cart",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(paramData),
+                beforeSend: function(xhr){
+                    var token = $("meta[name='_csrf']").attr("content");
+                    var header = $("meta[name='_csrf_header']").attr("content");
                     xhr.setRequestHeader(header, token);
                 },
-                dataType : "json",
-                cache : false,
-                success : function(result, status){
-                    alert("주문이 완료 되었습니다.");
-                    location.href='/';
+                success: function(result, status){
+                    alert("상품을 장바구니에 담았습니다.");
+                    location.href='/cart';  // 장바구니 페이지로 이동
                 },
-                error : function(jqXHR, status, error){
+                error: function(jqXHR, status, error){
+                    console.error("장바구니 추가 실패:", jqXHR.responseText); // 에러 로그 추가
                     if(jqXHR.status == '401'){
                         alert('로그인 후 이용해주세요.');
                         location.href='/member/signin';
-                    }else{
-                        alert(jqXHR.responseText);
+                    } else {
+                        alert(jqXHR.responseText || '장바구니 추가에 실패했습니다.');
                     }
                 }
             });
          }
 
-    function addCart(){
-        const paramData = {
-            itemId: parseInt($("#itemId").val()), // 문자열을 숫자로 변환
-            count: parseInt($("#count").val())  // 문자열을 숫자로 변환
-        };
-        
-        console.log("장바구니 요청 데이터:", paramData); // 디버깅용 로그 추가
-        
-        $.ajax({
-            url: "/cart",
-            type: "POST",
-            contentType: "application/json",
-            data: JSON.stringify(paramData),
-            beforeSend: function(xhr){
-                var token = $("meta[name='_csrf']").attr("content");
-                var header = $("meta[name='_csrf_header']").attr("content");
-                xhr.setRequestHeader(header, token);
-            },
-            success: function(result, status){
-                alert("상품을 장바구니에 담았습니다.");
-                location.href='/cart';  // 장바구니 페이지로 이동
-            },
-            error: function(jqXHR, status, error){
-                console.error("장바구니 추가 실패:", jqXHR.responseText); // 에러 로그 추가
-                if(jqXHR.status == '401'){
-                    alert('로그인 후 이용해주세요.');
-                    location.href='/member/signin';
-                } else {
-                    alert(jqXHR.responseText || '장바구니 추가에 실패했습니다.');
+        // CSRF 토큰 설정
+            var token = $("meta[name='_csrf']").attr("content");
+            var header = $("meta[name='_csrf_header']").attr("content");
+        console.log("currentUserId : "+ currentUserId);
+
+        // 댓글 목록 불러오기 함수
+        function loadComments() {
+            const itemId = $("#itemId").val();
+            
+            $.ajax({
+                url: `/comment/list/${itemId}?page=0`,
+                type: 'GET',
+                success: function(response) {
+                    console.log("Received comments:", response); // 디버깅용 로그
+                    $("#commentsContainer").empty();
+                    if (response && response.length > 0) {
+                        response.forEach(comment => {
+                            appendComment(comment);
+                        });
+                    } else {
+                        $("#commentsContainer").html('<p>등록된 댓글이 없습니다.</p>');
+                    }
+                },
+                error: function(error) {
+                    console.error('댓글 로드 에러:', error);
+                    $("#commentsContainer").html('<p>댓글을 불러오는데 실패했습니다.</p>');
                 }
-            }
-        });
-    }
-
-              // CSRF 토큰 설정
-           var token = $("meta[name='_csrf']").attr("content");
-           var header = $("meta[name='_csrf_header']").attr("content");
-           console.log("currentUserId : "+ currentUserId);
-
-    // 댓글 목록 불러오기 함수
-    function loadComments() {
-        const itemId = $("#itemId").val();
-        
-        $.ajax({
-            url: `/comment/list/${itemId}?page=0`,
-            type: 'GET',
-            success: function(response) {
-                console.log("Received comments:", response); // 디버깅용 로그
-                $("#commentsContainer").empty();
-                if (response && response.length > 0) {
-                    response.forEach(comment => {
-                        appendComment(comment);
-                    });
-                } else {
-                    $("#commentsContainer").html('<p>등록된 댓글이 없습니다.</p>');
-                }
-            },
-            error: function(error) {
-                console.error('댓글 로드 에러:', error);
-                $("#commentsContainer").html('<p>댓글을 불러오는데 실패했습니다.</p>');
-            }
-        });
-    }
-
-    // 댓글 저장 함수 수정
-    function saveComment() {
-        const content = $("#commentContent").val().trim();
-        const itemId = $("#itemId").val();
-        const rating = $('input[name="rating"]:checked').val();
-
-        if (!content) {
-            alert('댓글 내용을 입력해주세요.');
-            return;
+            });
         }
 
-        if (!rating) {
-            alert('별점을 선택해주세요.');
-            return;
+        // 댓글 저장 함수 수정
+        function saveComment() {
+            const content = $("#commentContent").val().trim();
+            const itemId = $("#itemId").val();
+            const rating = $('input[name="rating"]:checked').val();
+
+            if (!content) {
+                alert('댓글 내용을 입력해주세요.');
+                return;
+            }
+
+            if (!rating) {
+                alert('별점을 선택해주세요.');
+                return;
+            }
+
+            const commentData = {
+                content: content,
+                itemId: parseInt(itemId),
+                rating: parseInt(rating)
+            };
+
+            $.ajax({
+                url: '/comment/new',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(commentData),
+                beforeSend: function(xhr) {
+                    var token = $("meta[name='_csrf']").attr("content");
+                    var header = $("meta[name='_csrf_header']").attr("content");
+                    xhr.setRequestHeader(header, token);
+                },
+                success: function(response) {
+                    $("#commentContent").val('');
+                    $('input[name="rating"]').prop('checked', false);
+                    loadComments(); // 댓글 목록 새로고침
+                    alert('댓글이 등록되었습니다.');
+                },
+                error: function(jqXHR) {
+                    if (jqXHR.status === 401) {
+                        alert('로그인이 필요합니다.');
+                        location.href = '/member/signin';
+                    } else {
+                        alert(jqXHR.responseText || '댓글 등록에 실패했습니다.');
+                        console.error('댓글 저장 실패:', jqXHR);
+                    }
+                }
+            });
         }
 
-        const commentData = {
-            content: content,
-            itemId: parseInt(itemId),
-            rating: parseInt(rating)
-        };
-
-        $.ajax({
-            url: '/comment/new',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify(commentData),
-            beforeSend: function(xhr) {
-                var token = $("meta[name='_csrf']").attr("content");
-                var header = $("meta[name='_csrf_header']").attr("content");
-                xhr.setRequestHeader(header, token);
-            },
-            success: function(response) {
-                $("#commentContent").val('');
-                $('input[name="rating"]').prop('checked', false);
-                loadComments(); // 댓글 목록 새로고침
-                alert('댓글이 등록되었습니다.');
-            },
-            error: function(jqXHR) {
-                if (jqXHR.status === 401) {
-                    alert('로그인이 필요합니다.');
-                    location.href = '/member/signin';
-                } else {
-                    alert(jqXHR.responseText || '댓글 등록에 실패했습니다.');
-                    console.error('댓글 저장 실패:', jqXHR);
-                }
+        // 댓글 삭제
+        function deleteComment(commentId) {
+            if (!confirm('댓글을 삭제하시겠습니까?')) {
+                return;
             }
-        });
-    }
 
-    // 댓글 삭제
-    function deleteComment(commentId) {
-        if (!confirm('댓글을 삭제하시겠습니까?')) {
-            return;
+            $.ajax({
+                url: `/comment/delete/${commentId}`,
+                type: 'DELETE',
+                beforeSend: function(xhr) {
+                    var token = $("meta[name='_csrf']").attr("content");
+                    var header = $("meta[name='_csrf_header']").attr("content");
+                    xhr.setRequestHeader(header, token);
+                },
+                success: function(response) {
+                    alert('댓글이 삭제되었습니다.');
+                    loadComments(); // 댓글 목록 새로고침
+                },
+                error: function(jqXHR) {
+                    if (jqXHR.status === 401) {
+                        alert('로그인이 필요합니다.');
+                        location.href = '/member/signin';
+                    } else {
+                        alert(jqXHR.responseText || '댓글 삭제에 실패했습니다.');
+                    }
+                }
+            });
+         }
+
+        // 날짜 포맷팅 함수 추가
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleString('ko-KR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
         }
 
-        $.ajax({
-            url: `/comment/delete/${commentId}`,
-            type: 'DELETE',
-            beforeSend: function(xhr) {
-                var token = $("meta[name='_csrf']").attr("content");
-                var header = $("meta[name='_csrf_header']").attr("content");
-                xhr.setRequestHeader(header, token);
-            },
-            success: function(response) {
-                alert('댓글이 삭제되었습니다.');
-                loadComments(); // 댓글 목록 새로고침
-            },
-            error: function(jqXHR) {
-                if (jqXHR.status === 401) {
-                    alert('로그인이 필요합니다.');
-                    location.href = '/member/signin';
-                } else {
-                    alert(jqXHR.responseText || '댓글 삭제에 실패했습니다.');
-                }
-            }
-        });
-    }
-
-    // 날짜 포맷팅 함수 추가
-    function formatDate(dateString) {
-        if (!dateString) return '';
-        const date = new Date(dateString);
-        return date.toLocaleString('ko-KR', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    }
-
-    // 댓글 HTML 추가 함수 수정
-    function appendComment(comment) {
-        const stars = '★'.repeat(comment.rating) + '☆'.repeat(5 - comment.rating);
-        const commentHtml = `
-            <div class="comment-item" data-comment-id="${comment.id}">
-                <div class="comment-header d-flex justify-content-between align-items-center">
-                    <div>
-                        <span class="comment-author">${comment.memberUserId}</span>
-                        <span class="comment-rating">${stars}</span>
-                        <span class="comment-date">${formatDate(comment.regTime)}</span>
+        // 댓글 HTML 추가 함수 수정
+        function appendComment(comment) {
+            const stars = '★'.repeat(comment.rating) + '☆'.repeat(5 - comment.rating);
+            const commentHtml = `
+                <div class="comment-item" data-comment-id="${comment.id}">
+                    <div class="comment-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="comment-author">${comment.memberUserId}</span>
+                            <span class="comment-rating">${stars}</span>
+                            <span class="comment-date">${formatDate(comment.regTime)}</span>
+                        </div>
+                        <div class="button-group">
+                            ${currentUserId ? 
+                                (comment.memberUserId === currentUserId ? 
+                                    `<button class="btn btn-danger btn-sm" onclick="deleteComment(${comment.id})">삭제</button>` 
+                                    : 
+                                    `<button class="btn btn-warning btn-sm" onclick="reportComment(${comment.id})">신고</button>`
+                                ) 
+                                : ''
+                            }
+                        </div>
                     </div>
-                    <div class="button-group">
-                        ${currentUserId ? 
-                            (comment.memberUserId === currentUserId ? 
-                                `<button class="btn btn-danger btn-sm" onclick="deleteComment(${comment.id})">삭제</button>` 
-                                : 
-                                `<button class="btn btn-warning btn-sm" onclick="reportComment(${comment.id})">신고</button>`
-                            ) 
-                            : ''
-                        }
-                    </div>
+                    <div class="comment-content mt-2">${comment.content}</div>
                 </div>
-                <div class="comment-content mt-2">${comment.content}</div>
-            </div>
-        `;
-        $("#commentsContainer").append(commentHtml);
-    }
-
-    // 신고 함수 추가
-    function reportComment(commentId) {
-        if (!confirm('이 댓글을 신고하시겠습니까?')) {
-            return;
+            `;
+            $("#commentsContainer").append(commentHtml);
         }
 
-        $.ajax({
-            url: `/comment/report/${commentId}`,
-            type: 'POST',
-            beforeSend: function(xhr) {
-                var token = $("meta[name='_csrf']").attr("content");
-                var header = $("meta[name='_csrf_header']").attr("content");
-                xhr.setRequestHeader(header, token);
-            },
-            success: function(response) {
-                alert('신고가 접수되었습니다.');
-            },
-            error: function(jqXHR) {
-                alert(jqXHR.responseText || '신고 처리 중 오류가 발생했습니다.');
+        // 신고 함수 추가
+        function reportComment(commentId) {
+            if (!confirm('이 댓글을 신고하시겠습니까?')) {
+                return;
             }
-        });
-    }
+
+            $.ajax({
+                url: `/comment/report/${commentId}`,
+                type: 'POST',
+                beforeSend: function(xhr) {
+                    var token = $("meta[name='_csrf']").attr("content");
+                    var header = $("meta[name='_csrf_header']").attr("content");
+                    xhr.setRequestHeader(header, token);
+                },
+                success: function(response) {
+                    alert('신고가 접수되었습니다.');
+                },
+                error: function(jqXHR) {
+                    alert(jqXHR.responseText || '신고 처리 중 오류가 발생했습니다.');
+                }
+            });
+        }
 
     </script>
 </th:block>
 <!-- 사용자 CSS 추가 -->
 <th:block layout:fragment="css">
     <style>
-        .mgb-15{
-            margin-bottom:15px;
+        /* 기본 여백 및 레이아웃 */
+        .mgb-15 { margin-bottom: 15px; }
+        .mgt-30 { margin-top: 30px; }
+        .mgt-50 { margin-top: 50px; }
+
+        /* 상품 이미지 스타일 */
+        .repImgDiv {
+            margin-right: 25px;
+            width: 50%;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
         }
-        .mgt-30{
-            margin-top:30px;
+
+
+
+        .repImg {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            transition: all 0.3s ease;
         }
-        .mgt-50{
-            margin-top:50px;
+
+        .wd50 {
+            height: auto;
+            width: 50%;
+            padding-left: 15px;
         }
-        .repImgDiv{
-            margin-right:15px;
-            height:auto;
-            width:50%;
+
+        /* 상품 정보 스타일 */
+        .h4 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #b60217;
+            margin-bottom: 15px;
         }
-        .repImg{
-            width:100%;
-            height:400px;
+
+        /* 가격 및 수량 */
+        .text-danger {
+            font-weight: 700;
+            font-size: 1.8rem;
+            color: #000 !important;
         }
-        .wd50{
-            height:auto;
-            width:50%;
+
+        .text-danger span {
+            font-size: 1.8rem;
         }
+
+        /* 버튼 스타일 */
+        .btn {
+            padding: 12px 28px;
+            font-weight: 700;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-light {
+            background: #fff;
+            border: 2px solid #b60217;
+        }
+
+        .btn-light:hover {
+            background: #ffe5e5;
+            box-shadow: 0 4px 12px rgba(182, 2, 23, 0.2);
+        }
+
+        .btn-primary {
+            background: #b60217;
+            border: 2px solid #b60217;
+        }
+
+        .btn-primary:hover {
+            background: #900016;
+            box-shadow: 0 4px 12px rgba(182, 2, 23, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #d30820;
+            border: 2px solid #d30820;
+        }
+
+        .btn-danger:hover {
+            background: #a30618;
+            box-shadow: 0 4px 12px rgba(211, 8, 32, 0.3);
+        }
+
+        /* 리뷰/댓글 섹션 */
         #review {
-            margin-top: 30px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
+            margin-top: 50px;
+            padding: 30px;
+            background: #fdf2f2;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(182, 2, 23, 0.1);
+        }
+
+        #review h2 {
+            font-size: 1.8rem;
+            color: #b60217;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        #review h2:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: #b60217;
         }
 
         .comment-item {
-            margin: 15px 0;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 4px;
-            border: 1px solid #dee2e6;
+            margin: 20px 0;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            border: 1px solid #eaeaea;
+            box-shadow: 0 2px 10px rgba(182, 2, 23, 0.05);
+            transition: transform 0.2s ease;
         }
 
-        .comment-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
+        .comment-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(182, 2, 23, 0.1);
         }
 
         .comment-author {
-            font-weight: bold;
-            margin-right: 10px;
+            font-weight: 700;
+            color: #b60217;
+            font-size: 1.1rem;
         }
 
-        .comment-date {
-            color: #6c757d;
-            font-size: 0.9em;
-        }
-
-        .comment-content {
-            margin-top: 10px;
-            word-break: break-all;
-        }
-
-        .btn-danger.btn-sm {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.875rem;
-        }
-
-        #new_comment_container {
-            margin-bottom: 20px;
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
+        /* 별점 스타일 개선 */
         .star-rating {
-            display: inline-flex;
-            flex-direction: row-reverse;
-            font-size: 1.5em;
-            justify-content: space-around;
+            display: flex;
+            justify-content: flex-end;
+            font-size: 1.8em;
             padding: 0 .2em;
             text-align: center;
-            width: 5em;
+            width: 100%;
+            margin-bottom: 10px;
         }
 
         .star-rating input {
@@ -398,23 +498,54 @@
         }
 
         .star-rating label {
-            color: #ccc;
+            color: #ddd;
             cursor: pointer;
+            padding: 0 3px;
+            transition: all 0.2s;
         }
 
         .star-rating :checked ~ label {
-            color: #f90;
+            color: #b60217;
         }
 
         .star-rating label:hover,
         .star-rating label:hover ~ label {
-            color: #fc0;
+            color: #d30820;
+            transform: scale(1.2);
         }
 
         .comment-rating {
-            color: #f90;
+            color: #b60217;
             margin-left: 10px;
+            letter-spacing: 2px;
         }
+
+        /* border-success-subtle 제거 */
+        .border-success-subtle {
+            border: none !important;
+        }
+
+        /* 반응형 조정 */
+        @media (max-width: 768px) {
+            .d-flex {
+                flex-direction: column;
+            }
+
+            .repImgDiv, .wd50 {
+                width: 100%;
+                margin-right: 0;
+                margin-bottom: 25px;
+            }
+
+            .wd50 {
+                padding-left: 0;
+            }
+
+            .input-group {
+                width: 100% !important;
+            }
+        }
+
     </style>
 </th:block>
 
@@ -455,7 +586,7 @@
             </div>
             <div th:if="${item.itemSellStatus == T(com.MyDrama.constant.ItemSellStatus).SELL}"
                  class="text-right">
-                <button type="button" class="btn btn-light border border-primary btn-lg"
+                <button type="button" class="btn btn-light border btn-lg"
                         onclick="addCart()">
                     장바구니 담기</button>
                 <button type="button" class="btn btn-primary btn-lg" onclick="order()">주문하기</button>
@@ -468,7 +599,7 @@
     </div>
     <div class="mgt-30">
         <div class="container">
-            <h4 class="border border-success-subtle rounded-pill display-5">상품 상세 설명</h4>
+            <h4 class="border border-success-subtle">상품 상세 설명</h4>
             <hr class="my-4">
             <p class="lead" th:text="${item.description}"></p>
         </div>

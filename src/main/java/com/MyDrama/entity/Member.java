@@ -6,16 +6,13 @@ import com.MyDrama.constant.Role;
 import com.MyDrama.dto.MemberFormDto;
 import com.MyDrama.dto.MemberupdateDto;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+@ToString(exclude = {"chatRooms"})  // 순환 참조 방지
 @Entity
 @Getter
 @Setter
-@ToString
 @NoArgsConstructor
 public class Member {
     @Id
@@ -46,10 +43,10 @@ public class Member {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @Column(length = 10, nullable = false)
+    @Column(length = 10)
     private String zipcode; // 우편번호
 
-    @Column(length = 100,nullable = false)
+    @Column(length = 100)
     private String address; // 기본주소
 
     @Column(length = 100)
@@ -61,10 +58,11 @@ public class Member {
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
     private boolean smsAgreement = false;  // SMS 수신 동의
 
-    private String provider; // 소셜 로그인 제공자 정보 (예 : 구글, 네이버 등)
+    @Column(nullable = false, columnDefinition = "INTEGER DEFAULT 0")
+    private int reportCount = 0; // 신고 횟수
 
-    private String picture; // 소셜 로그인 사용자를 위한 필드
-
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
+    private boolean blacklisted = false; // 블랙리스트 여부
 
     public static Member createMember(MemberFormDto memberFormDto, PasswordEncoder passwordEncoder){
         Member member = new Member();
@@ -94,11 +92,22 @@ public class Member {
         this.mailingAgreement = memberupdateDto.isMailingAgreement();
     }
 
-    public void updatePassword(MemberFormDto memberFormDto,PasswordEncoder passwordEncoder){
-        String newPassword =passwordEncoder.encode(memberFormDto.getPassword());
+    public void updatePassword(String newPassword){
         this.password = newPassword;
     }
 
+    // 신고 횟수 증가 메서드
+    public void increaseReportCount() {
+        this.reportCount++;
+        if (this.reportCount >= 5) {
+            this.blacklisted = true;
+        }
+    }
+
+    // 블랙리스트 상태 확인 메서드
+    public boolean isBlacklisted() {
+        return this.blacklisted;
+    }
 }
 
 

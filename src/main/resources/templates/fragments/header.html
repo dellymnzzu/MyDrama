@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChillStream</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+  <style>
+    /* 전체 배경 및 텍스트 기본 설정 */
+    body {
+        background-color: #141414; /* 검정 배경 */
+        color: #ffffff; /* 흰색 텍스트 */
+        font-family: 'Arial', sans-serif;
+    }
+
+    /* 네비게이션 바 스타일 */
+    .navbar {
+        background-color: #6a0dad; /* 보라색 배경 */
+    }
+
+    .navbar-nav .nav-link {
+        color: #ffffff;
+        font-size: 16px;
+        margin-left: 10px;
+    }
+
+    .navbar-nav .nav-link:hover {
+        color: #c0c0ff; /* 밝은 보라색 텍스트 */
+    }
+
+    .navbar-toggler {
+        border-color: #c0c0ff;
+    }
+
+    .navbar-toggler-icon {
+        background-image: none;
+        color: #c0c0ff;
+    }
+
+  nav .dropdown-menu {
+        background-color: #2a2a2a !important; /* 어두운 회색 */
+        border: 1px solid #6a0dad !important; /* 보라색 테두리 */
+        color: #ffffff !important; /* 흰색 텍스트 */
+        box-shadow: none; /* 기본 그림자 제거 */
+    }
+
+    nav .dropdown-item {
+        color: #ffffff !important; /* 흰색 텍스트 */
+    }
+
+    nav .dropdown-item:hover,
+    nav .dropdown-item:focus {
+        background-color: #6a0dad !important; /* 보라색 배경 */
+        color: #ffffff !important; /* 흰색 텍스트 */
+    }
+    /* 드롭다운 메뉴 오른쪽 끝 조정 */
+    .dropdown-menu-end {
+        left: auto !important;
+        right: 0 !important;
+    }
+
+    /* 버튼에 부드러운 라운드 처리 */
+    .btn {
+        background-color: #6a0dad;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+    }
+
+    .btn:hover {
+        background-color: #7b1fab; /* 밝은 보라 */
+        color: #ffffff;
+    }
+
+    nav .dropdown-item:focus,
+    nav .dropdown-item:active {
+    background-color: #6a0dad !important; /* 클릭/포커스 시 배경색 */
+    color: #ffffff !important; /* 클릭/포커스 시 텍스트 색상 */
+    outline: none !important; /* 브라우저 기본 아웃라인 제거 */
+    box-shadow: none !important; /* 추가된 그림자 제거 */
+    }
+
+.search-input {
+    background-color: #2a2a2a;
+    border: 1px solid #6a0dad;
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 5px 0 0 5px;
+    font-size: 16px;
+    outline: none;
+}
+
+.search-input::placeholder {
+    color: #aaa;
+    font-style: italic;
+}
+
+.search-input:focus {
+    border-color: #8344bd;
+    box-shadow: 0 0 5px #8344bd;
+}
+
+/* 서치 버튼 스타일 */
+/* 검색 섹션 내의 스타일만 지정 */
+#search-section .search-input {
+background-color: #2a2a2a;
+border: 1px solid #6a0dad;
+color: #fff;
+padding: 10px 15px;
+border-radius: 5px 0 0 5px;
+font-size: 16px;
+outline: none;
+}
+
+#search-section .search-input::placeholder {
+color: #aaa;
+font-style: italic;
+}
+
+#search-section .search-input:focus {
+border-color: #8344bd;
+box-shadow: 0 0 5px #8344bd;
+}
+
+/* 검색 버튼 고정 스타일 */
+#search-section .search-btn {
+background-color: #6a0dad !important; /* 보라색 고정 */
+color: #fff !important; /* 흰색 텍스트 고정 */
+border: 1px solid #6a0dad !important; /* 보라색 테두리 고정 */
+padding: 10px 15px;
+border-radius: 0 5px 5px 0;
+display: flex;
+align-items: center;
+justify-content: center;
+transition: background-color 0.3s ease;
+}
+
+#search-section .search-btn:hover {
+background-color: #8344bd !important; /* 보라색 유지 */
+}
+
+#search-section .search-btn:focus {
+background-color: #5a0882 !important;
+box-shadow: 0 0 5px #5a0882;
+}
+
+/* 돋보기 아이콘 크기 */
+#search-section .search-btn .fas {
+font-size: 18px;
+}
+
+        #search-section {
+    display: none;
+}
+
+body[data-path="/home"] #search-section {
+    display: block;
+}
+
+/* 기본 로고 크기 */
+img.navbar-logo {
+width: auto; /* 비율 유지 */
+ transition: filter 0.3s ease;
+}
+
+
+
+/* 로고 주변 공간 최소화 */
+img.navbar-brand {
+padding: 0; /* 기본 padding 제거 */
+margin: 0; /* 기본 margin 제거 */
+max-height: 40px; /* 내비게이션 높이 초과 방지 */
+display: inline-flex;
+align-items: center;
+}
+
+/* 내비게이션 높이 고정 */
+.navbar {
+height: 20px; /* 전체 네비게이션 높이를 고정 */
+}
+
+
+  </style>
+</head>
+<body>
+<div style="background: white; color: black; padding: 10px; margin: 10px;">
+    <p>인증 디버그:</p>
+    <p>인증 상태: <span th:text="${#authorization != null ? (#authorization.expression('isAuthenticated()') ? '인증됨' : '인증안됨') : '인증 객체 없음'}"></span></p>
+    <p>현재 사용자: <span th:text="${#authentication != null ? #authentication.name : '인증 객체 없음'}"></span></p>
+</div>
+<div th:fragment="header">
+
+  <nav class="navbar navbar-expand-lg navbar-dark" data-bs-theme="red">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/" th:if="${#authentication.name != 'anonymousUser'}">
+        <img src="/img/Bangers.png" alt="ChillStream Logo" style="height: 34px;">
+      </a>
+
+      <span class="navbar-brand" th:if="${#authentication.name == 'anonymousUser'}"
+            style="cursor: default;">
+                <img src="/img/Bangers.png" alt="ChillStream Logo"
+                     style="height: 34px;"></span>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+              data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
+              aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <!-- 왼쪽 관리자 메뉴 -->
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item dropdown" sec:authorize="hasAnyAuthority('ROLE_ADMIN')">
+            <a class="nav-link dropdown-toggle" href="#" id="adminMenu" role="button"
+               data-bs-toggle="dropdown" aria-expanded="false">
+              관리자
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="adminMenu">
+             <li><a class="dropdown-item" href="/admin/item/new">상품 관리</a></li>
+              <li><a class="dropdown-item" href="/admin/dashboard">관리자 페이지지</a></li>
+              <li><a class="dropdown-item" href="/notice/list">공지사항 추가</a></li>
+              <li><a class="dropdown-item" href="/admin/banner/list">배너관리</a></li>
+              <li><a class="dropdown-item" href="/admin/dashboard">통계</a></li>
+            </ul>
+          </li>
+        </ul>
+        <!-- 오른쪽 구독 및 프로필 메뉴 -->
+        <ul class="navbar-nav ms-auto">
+
+          <div id="search-section" th:if="${currentPath == '/'}">
+            <form class="d-flex align-items-center" th:action="@{/}" method="get"
+                  sec:authorize="isAuthenticated()">
+              <div class="input-group">
+                <input name="searchQuery" class="form-control search-input" type="search"
+                       placeholder="" aria-label="Search">
+                <button class="btn search-btn" type="submit">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                       class="bi bi-search" viewBox="0 0 16 16">
+                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                  </svg>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- 구독 메뉴 -->
+          <li class="nav-item" sec:authorize="isAuthenticated()">
+            <a class="nav-link" href="/subscribe/buy">장바구니</a>
+          </li>
+          <li class="nav-item" sec:authorize="isAuthenticated()">
+            <a class="nav-link" href="/order/orderList">주문 내역</a>
+          </li>
+          <!-- 프로필 메뉴 -->
+          <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
+            <a class="nav-link dropdown-toggle" href="#" id="profileMenu" role="button"
+               data-bs-toggle="dropdown" aria-expanded="false">
+              프로필
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileMenu">
+              <li><a class="dropdown-item" href="/member/mypage">마이페이지</a></li>
+              <li><a class="dropdown-item" href="/members/logout">로그아웃</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+</div>
+</body>
+</html>

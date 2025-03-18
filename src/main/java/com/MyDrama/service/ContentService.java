@@ -38,11 +38,8 @@ public class ContentService {
     private final FileService fileService;
     private final ItemImgRepository itemImgRepository;
 
-
-
-    public void saveItemImg(ItemImg itemImg, MultipartFile itemImgFile) throws Exception{
-
-        String oriImgName = itemImgFile.getOriginalFilename(); // 오리지날 이미지 경로
+    public void saveItemImg(ItemImg itemImg, MultipartFile itemImgFile) throws Exception {
+        String oriImgName = itemImgFile.getOriginalFilename();
         String imgName = "";
         String imgUrl ="";
         System.out.println(oriImgName);
@@ -52,7 +49,7 @@ public class ContentService {
             imgName = fileService.uploadFile(itemImgLocation, oriImgName,
                     itemImgFile.getBytes()); //sdkjg3453443jkdsfjkgjmkl.jpg
             System.out.println(imgName);
-            imgUrl = "/item/"+imgName; // /images/item/sdkjg3453443jkdsfjkgjmkl.jpg
+            imgUrl = "/itemimg/"+imgName; // /images/item/sdkjg3453443jkdsfjkgjmkl.jpg
         }
         System.out.println("1111");
         //상품 이미지 정보 저장
@@ -75,7 +72,7 @@ public class ContentService {
             String oriImgName = itemImgFile.getOriginalFilename();
             String imgName = fileService.uploadFile(itemImgLocation, oriImgName,
                     itemImgFile.getBytes()); // 파일 업로드
-            String imgUrl = "/item/" + imgName;
+            String imgUrl = "/itemimg/" + imgName;
             //변경된 상품 이미지 정보를 세팅
             //상품 등록을 하는 경우에는 ItemImgRepository.save()로직을 호출 하지만
             //호출을 하지 않았습니다.

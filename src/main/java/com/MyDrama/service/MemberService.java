@@ -15,6 +15,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Random;
+
 @Service
 @Transactional
 @RequiredArgsConstructor  // 자동주입해준다.
@@ -24,6 +26,7 @@ public class MemberService implements UserDetailsService {  // UserDetailService
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final MailService mailService;  // MailService 주입
 
     public Member saveMember(Member member){  // controller에서 saveMember를 불렀을 때
         validateDuplicateMember(member);
@@ -31,20 +34,16 @@ public class MemberService implements UserDetailsService {  // UserDetailService
     }
 
 
-    private void validateDuplicateMember(Member member){
-        Member findMember = memberRepository.findByUserId(member.getUserId());
-        if(findMember != null){
-            throw new IllegalStateException("이미 가입된 회원입니다.");
-        }
+    private void validateDuplicateMember(Member member) {
+        Member findMember;
         findMember = memberRepository.findByEmail(member.getEmail());
-        if(findMember != null){
-            throw new IllegalStateException("이미 가입된 이메일입니다.");
+        if (findMember != null) {
+            throw new IllegalStateException("이미 가입된 회원입니다."); // 예외 발생
         }
         findMember = memberRepository.findByTel(member.getTel());
-        if(findMember !=null){
-            throw new IllegalStateException("이미 가입된 번호입니다.");
+        if (findMember != null) {
+            throw new IllegalStateException("이미 가입된 전화번호입니다."); // 예외 발생
         }
-
     }
 
     @Override
@@ -73,7 +72,8 @@ public class MemberService implements UserDetailsService {  // UserDetailService
 
     //비밀번호 수정
     public void updatePassword(PasswordChangeFormDto passwordChangeFormDto){
-        Member member = memberRepository.findById(passwordChangeFormDto.getId()).orElseThrow(()->new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
+        Member member = memberRepository.findById(passwordChangeFormDto.getId())
+            .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
 
         if(!passwordEncoder.matches(passwordChangeFormDto.getCurrentPassword(), member.getPassword())){
             throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
@@ -82,8 +82,8 @@ public class MemberService implements UserDetailsService {  // UserDetailService
             throw new IllegalArgumentException("비밀번호와 비밀번호 확인이 일치하지 않습니다.");
         }
 
-        member.setPassword(passwordEncoder.encode(passwordChangeFormDto.getNewPassword()));
-        memberRepository.save(member);
+        String encodedPassword = passwordEncoder.encode(passwordChangeFormDto.getNewPassword());
+        member.updatePassword(encodedPassword);  // member 객체 대신 암호화된 비밀번호 전달
     }
 
     //회원 정보 삭제
@@ -95,4 +95,95 @@ public class MemberService implements UserDetailsService {  // UserDetailService
         }
         memberRepository.delete(member);
     }
+    
+    public Member findUserId(String userId) {
+        Member member = memberRepository.findByUserId(userId);
+        if(member == null) {
+            throw new IllegalArgumentException("해당 회원을 찾을 수 없습니다.");
+        }
+        return member;  // Member 객체 반환
+    }
+
+    public String findUserIdAndSendEmail(String name, String email) {
+        Member member = memberRepository.findByNameAndEmail(name, email)
+            .orElseThrow(() -> new UsernameNotFoundException("해당 이름과 이메일로 가입된 계정이 없습니다."));
+
+        // 로그 추가
+        System.out.println("찾은 회원 정보:");
+        System.out.println("이름: " + member.getName());
+        System.out.println("이메일: " + member.getEmail());
+        System.out.println("아이디: " + member.getUserId());
+
+        // 이메일로 아이디 발송
+        String subject = "MyDrama 아이디 찾기 결과";
+        String text = "<div style='margin:20px;'>" +
+                     "<h1>MyDrama 아이디 찾기 결과입니다.</h1>" +
+                     "<br>" +
+                     "<p>회원님의 아이디는 <strong>" + member.getUserId() + "</strong> 입니다.</p>" +
+                     "<br>" +
+                     "<p>감사합니다.</p>" +
+                     "</div>";
+
+        mailService.sendMail(email, subject, text);
+
+        return "아이디가 이메일로 발송되었습니다.";
+    }
+
+    public String resetPassword(String userId, String email) {
+        Member member = memberRepository.findByUserIdAndEmail(userId, email)  // findByNameAndEmail -> findByUserIdAndEmail
+            .orElseThrow(() -> new UsernameNotFoundException("해당 아이디와 이메일로 가입된 계정이 없습니다."));
+
+        // 로그 추가
+        System.out.println("비밀번호 재설정 요청:");
+        System.out.println("이메일: " + member.getEmail());
+        System.out.println("아이디: " + member.getUserId());
+
+        // 임시 비밀번호 생성
+        String tempPassword = generateRandomPassword();
+        System.out.println("임시 비밀번호: " + tempPassword);
+        
+        // 임시 비밀번호 암호화 후 저장
+        member.updatePassword(passwordEncoder.encode(tempPassword));
+        memberRepository.save(member);
+
+        // 이메일로 임시 비밀번호 발송
+        String subject = "MyDrama 임시 비밀번호 발급";
+        String text = "<div style='margin:20px;'>" +
+                     "<h1>MyDrama 임시 비밀번호입니다.</h1>" +
+                     "<br>" +
+                     "<p>임시 비밀번호: <strong>" + tempPassword + "</strong></p>" +
+                     "<br>" +
+                     "<p>보안을 위해 로그인 후 반드시 비밀번호를 변경해주세요.</p>" +
+                     "<br>" +
+                     "<p>감사합니다.</p>" +
+                     "</div>";
+
+        mailService.sendMail(email, subject, text);
+
+        return "임시 비밀번호가 이메일로 발송되었습니다.";
+    }
+
+    private String generateRandomPassword() {
+        StringBuilder key = new StringBuilder();
+        Random random = new Random();
+
+        for (int i = 0; i < 8; i++) {
+            int index = random.nextInt(3);
+            switch (index) {
+                case 0:
+                    key.append((char) (random.nextInt(26) + 97)); // a-z
+                    break;
+                case 1:
+                    key.append((char) (random.nextInt(26) + 65)); // A-Z
+                    break;
+                case 2:
+                    key.append(random.nextInt(10)); // 0-9
+                    break;
+            }
+        }
+        return key.toString();
+    }
+
 }
+
+

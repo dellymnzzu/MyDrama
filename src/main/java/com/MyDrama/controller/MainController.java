@@ -1,20 +1,16 @@
 package com.MyDrama.controller;
 
 import com.MyDrama.config.SecurityUtil;
-import com.MyDrama.dto.ItemDto;
-import com.MyDrama.dto.ItemSearchDto;
-import com.MyDrama.dto.MainItemDto;
+import com.MyDrama.dto.*;
 import com.MyDrama.entity.Item;
 import com.MyDrama.entity.ItemCrawl;
 import com.MyDrama.entity.Member;
 import com.MyDrama.repository.ItemCrawlerRepository;
-import com.MyDrama.service.ItemService;
-import com.MyDrama.service.MemberService;
-import com.MyDrama.service.VisitorService;
-import com.MyDrama.service.WebCrawlerService;
+import com.MyDrama.service.*;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -29,6 +25,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.security.Principal;
@@ -43,6 +40,7 @@ public class MainController {
     private final ItemService itemService;
     private final WebCrawlerService webCrawlerService;
     private final ItemCrawlerRepository itemCrawlerRepository;
+    private final NoticeService noticeService;
     private Member getLoggedInMember(Principal principal) {
         String userId = SecurityUtil.getCurrentUserEmail();
         return memberService.findUserId(userId);
@@ -106,4 +104,8 @@ public class MainController {
         model.addAttribute("items", items);
         return "crawling/itemList";
     }
+
+
+
+
 }

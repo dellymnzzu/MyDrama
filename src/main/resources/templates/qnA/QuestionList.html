@@ -7,6 +7,81 @@
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}">
 </head>
+<th:block layout:fragment="css">
+    <style>
+        body {
+     background-color: #f8f8f8;
+     color: #333;
+ }
+
+ .container {
+     background: white;
+     padding: 80px;
+     border-radius: 10px;
+     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+ }
+
+ h2 {
+     color: #b60217;
+     font-weight: bold;
+ }
+
+ .btn-primary {
+     background-color: #b60217;
+     border-color: #b60217;
+ }
+
+ .btn-primary:hover {
+     background-color: #950113;
+     border-color: #950113;
+ }
+
+ .btn-outline-success {
+     color: #b60217;
+     border-color: #b60217;
+ }
+
+ .btn-outline-success:hover {
+     background-color: #950113;
+     border-color: #950113;
+     color: white;
+ }
+
+ .table th {
+     background-color: #b60217;
+     color: white;
+ }
+
+ .table-hover tbody tr:hover {
+     background-color: rgba(182, 2, 23, 0.1);
+ }
+
+ .badge.bg-warning {
+     background-color: #ffc107;
+     color: #333;
+ }
+
+ .badge.bg-success {
+     background-color: #28a745;
+     color: white;
+ }
+
+ .pagination .page-link {
+     color: #b60217;
+ }
+
+ .pagination .page-item.active .page-link {
+     background-color: #b60217;
+     border-color: #b60217;
+ }
+
+ .pagination .page-link:hover {
+     background-color: #950113;
+     color: white;
+ }
+
+    </style>
+</th:block>
 
 <div layout:fragment="content">
     <div class="container my-5">

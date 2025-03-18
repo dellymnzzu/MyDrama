@@ -30,9 +30,15 @@ public class OrderService {
     private final ItemImgRepository itemImgRepository;
 
     public Long order(OrderDto orderDto, String userId) {
+        Member member = memberRepository.findByUserId(userId);
+        
+        // 블랙리스트 체크
+        if (member.isBlacklisted()) {
+            throw new IllegalStateException("신고 누적으로 인해 주문이 제한된 사용자입니다.");
+        }
+
         Item item = itemRepository.findById(orderDto.getItemId())
                 .orElseThrow(EntityNotFoundException::new);
-        Member member = memberRepository.findByUserId(userId);
 
         List<OrderItem> orderItemList = new ArrayList<>();
         OrderItem orderItem = OrderItem.createOrderItem(item, orderDto.getCount());
@@ -44,22 +50,20 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public Page<OrderHistDto> getOrderList(String email, Pageable pageable){
-        List<Order> orders = orderRepository.findOrders(email, pageable); // 주문 리스트
-        Long totalCount = orderRepository.countOrder(email); // 총 주문 수
-        List<OrderHistDto> orderHistDtos = new ArrayList<>(); // 주문 히스토리 리스트
-        // Order -> OrderHistDto
-        // OrderItem -> OrderItemDto
-        for(Order order : orders){ // 주문들 -> 주문
-            OrderHistDto orderHistDto = new OrderHistDto(order); // 주문 히스토리 객체생성
-            List<OrderItem> orderItems = order.getOrderItems(); // 주문 -> 주문 아이템들
-            for(OrderItem orderItem : orderItems){ // 주문 아이템들 - > 주문 아이템
-                //주문 아이템 -> item id를 추출 해서 대표이미지를 받습니다. ItemImg
-                ItemImg itemImg = itemImgRepository.findByItemIdAndRepImgYn(orderItem.getItem().getId(),
-                        "Y");
-                // 주문 아이템, 대표이미지 URL을 이용해서 OrderItemDto 객체를 생성
-                OrderItemDto orderItemDto = new OrderItemDto(orderItem, itemImg.getImgUrl());
-                // 주문 히스토리 -> 주문 아이템 리스트에 추가
+    public Page<OrderHistDto> getOrderList(String userId, Pageable pageable){
+        List<Order> orders = orderRepository.findOrders(userId, pageable);
+        Long totalCount = orderRepository.countOrder(userId);
+        List<OrderHistDto> orderHistDtos = new ArrayList<>();
+
+        for(Order order : orders){
+            OrderHistDto orderHistDto = new OrderHistDto(order);
+            List<OrderItem> orderItems = order.getOrderItems();
+            for(OrderItem orderItem : orderItems){
+                ItemImg itemImg = itemImgRepository.findByItemIdAndRepImgYn(
+                    orderItem.getItem().getId(), "Y");
+                // 이미지 경로를 전체 URL로 구성
+                String imgUrl = "/itemImg/" + itemImg.getImgName(); // 또는 getOriImgName()
+                OrderItemDto orderItemDto = new OrderItemDto(orderItem, imgUrl);
                 orderHistDto.addOrderItemDto(orderItemDto);
             }
             //주문히스트리스트에 주문히스토리를 추가
@@ -70,12 +74,12 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public boolean validateOrder(Long orderId, String email){
-        Member curMember = memberRepository.findByEmail(email);
+    public boolean validateOrder(Long orderId, String userId){
+        Member curMember = memberRepository.findByUserId(userId);
         Order order = orderRepository.findById(orderId).orElseThrow(EntityNotFoundException::new);
         Member savedMember = order.getMember();
 
-        if(!StringUtils.equals(curMember.getEmail(), savedMember.getEmail())){
+        if(!StringUtils.equals(curMember.getUserId(), savedMember.getUserId())){
             return false;
         }
         return  true;
@@ -86,9 +90,14 @@ public class OrderService {
     }
 
 
-    public Long orders(List<OrderDto> orderDtoList, String email){
-        //Member 엔티티 객체 추출
-        Member member = memberRepository.findByEmail(email);
+    public Long orders(List<OrderDto> orderDtoList, String userId) {
+        Member member = memberRepository.findByUserId(userId);
+        
+        // 블랙리스트 체크
+        if (member.isBlacklisted()) {
+            throw new IllegalStateException("신고 누적으로 인해 주문이 제한된 사용자입니다.");
+        }
+
         //주문 Item 리스트 객체 생성
         List<OrderItem> orderItemList = new ArrayList<>();
         //주문 Dto List에 있는 객체만큼 반복
@@ -108,5 +117,30 @@ public class OrderService {
         orderRepository.save(order);
 
         return order.getId();
+    }
+
+    // 주문의 아임포트 결제 고유 번호(imp_uid) 조회
+    @Transactional(readOnly = true)
+    public String getImpUid(Long orderId) {
+        try {
+            Order order = orderRepository.findById(orderId)
+                    .orElseThrow(() -> new EntityNotFoundException("해당 주문을 찾을 수 없습니다."));
+            
+            // impUid 필드가 있는지 확인
+            String impUid = order.getImpUid();
+            
+            if (impUid == null || impUid.isEmpty()) {
+                // 결제 정보가 없는 경우
+                System.out.println("주문 ID: " + orderId + "의 결제 정보(impUid)가 없습니다.");
+                return null;
+            }
+            
+            System.out.println("주문 ID: " + orderId + "의 결제번호(impUid): " + impUid);
+            return impUid;
+        } catch (Exception e) {
+            System.err.println("결제 정보 조회 중 오류 발생: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
     }
 }

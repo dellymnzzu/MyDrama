@@ -5,11 +5,14 @@ import com.MyDrama.dto.MemberupdateDto;
 import com.MyDrama.dto.PasswordChangeFormDto;
 import com.MyDrama.entity.Member;
 import com.MyDrama.repository.MemberRepository;
+import com.MyDrama.service.MailService;
 import com.MyDrama.service.MemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.catalina.security.SecurityUtil;
 import org.springframework.boot.Banner;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,6 +32,8 @@ public class MemberController {
     private final MemberService memberService;
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final MailService mailService;
+    String confirm = "";
 
     boolean confirmCheck = false;
 
@@ -77,6 +82,8 @@ public class MemberController {
     }
 
 
+
+
     @GetMapping(value = "/mypage")
     public String mypage(Model model, Principal principal){
         //principal을 사용하는 이유는 로그인한 사용자의 정보를 받아오기 위해 사용한다.
@@ -120,12 +127,21 @@ public class MemberController {
             return "members/myPage";
         }
         
-        return "redirect:/member/mypage";
+        return "redirect:/member/signin";
     }
 
     @GetMapping(value = "/mypage/rePw")
-    public String repw(Model model){
-        model.addAttribute("passwordChangeFormDto",new PasswordChangeFormDto());
+    public String repw(Model model) {
+        model.addAttribute("passwordChangeFormDto", new PasswordChangeFormDto());
+        model.addAttribute("resetType", "mypage");
+        return "members/updatePw";
+    }
+
+    @GetMapping(value = "/resetPassword")
+    public String resetPassword(@RequestParam String token, Model model) {
+        model.addAttribute("passwordChangeFormDto", new PasswordChangeFormDto());
+        model.addAttribute("resetType", "email");
+        model.addAttribute("token", token);
         return "members/updatePw";
     }
 
@@ -172,39 +188,93 @@ public class MemberController {
         return "redirect:/member/signin";
     }
 
-    @DeleteMapping("/mypage/delete")  // DELETE를 POST로 변경
-    public String deleteMember(Principal principal, Model model) {
+
+    //회원 탈퇴
+    @DeleteMapping("/mypage/delete")
+    public ResponseEntity<String> deleteMember(Principal principal) {
         try {
-            if(principal == null) {
-                model.addAttribute("errorMessage", "로그인 정보가 없습니다.");
-                return "redirect:/member/signin";
+            if (principal == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("로그인 정보가 없습니다.");
             }
-            
             memberService.deleteMember(principal.getName());
-            return "redirect:/";
+            return ResponseEntity.ok("탈퇴가 완료되었습니다.");
         } catch (IllegalArgumentException e) {
-            model.addAttribute("errorMessage", e.getMessage());
-            return "members/myPage";
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
 
+
+
     @GetMapping(value = "/findEmail")
     public String findEmailForm(){
+
         return "/members/findEmail";
     }
+
     @PostMapping(value = "/findEmail")
-    public String findEmailFormPost(){
-        return "/members/findEmail";
+    @ResponseBody
+    public ResponseEntity<String> findEmailFormPost(@RequestParam("name") String name, 
+                                                  @RequestParam("email") String email) {
+        try {
+            String result = memberService.findUserIdAndSendEmail(name, email);
+            if (result == null || result.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("이메일을 찾을 수 없습니다.");
+            }
+            return ResponseEntity.ok(result);
+        }  catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                               .body("서버 오류가 발생했습니다.");
+        }
     }
 
     @GetMapping(value = "/findPassword")
-    public String findPasswordForm(){
-        return "/members/findPassword";
-    }
-    @PostMapping(value = "/findPassword")
-    public String findPasswordFormPost(){
+    public String findPasswordForm() {
         return "/members/findPassword";
     }
 
+    @PostMapping(value = "/findPassword")
+    @ResponseBody
+    public ResponseEntity<String> findPasswordFormPost(@RequestParam("userId") String userId,
+                                                     @RequestParam("email") String email) {
+        try {
+            String result = memberService.resetPassword(userId, email);
+            if(result == null || result.isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body("이메일 또는 아이디를를 찾을 수 없습니다.");
+            }
+            return ResponseEntity.ok(result);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                               .body("서버 오류가 발생했습니다.");
+        }
+    }
+
+
+    @PostMapping("/{email}/emailConfirm")
+    public @ResponseBody ResponseEntity emailConfrim(@PathVariable("email") String email)
+            throws Exception{
+        System.out.println("이메일 보내기 : "+ email);
+        confirm = mailService.sendSimpleMessage(email);
+        System.out.println("이메일 보내기 confirm : "+confirm);
+
+        return new ResponseEntity<String>("인증 메일을 보냈습니다.", HttpStatus.OK);
+    }
+
+    @PostMapping("/{code}/codeCheck")
+    public @ResponseBody ResponseEntity codeConfirm(@PathVariable("code")String code)
+            throws Exception{
+        if(confirm.equals(code)){
+            confirmCheck = true;
+            return new ResponseEntity<String>("인증 성공하였습니다.",HttpStatus.OK);
+        }
+        return new ResponseEntity<String>("인증 코드를 올바르게 입력해주세요.",HttpStatus.BAD_REQUEST);
+    }
+
 }
+
+
+

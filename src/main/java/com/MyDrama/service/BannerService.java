@@ -36,21 +36,6 @@ public class BannerService {
         return banner.getId();
     }
 
-    @Transactional(readOnly = true)
-    public BannerDto getBanner(Long id) {
-        Banner banner = bannerRepository.findById(id)
-        .orElseThrow(EntityNotFoundException::new);
-        BannerDto bannerDto = BannerDto.of(banner);
-        return bannerDto;
-    }
-
-    @GetMapping("/banner/list")
-    public String bannerList(Model model) {
-        List<Banner> banners = bannerRepository.findAll();
-        model.addAttribute("banners", banners);
-        return "banner/bannerList";
-    }
-
     // 배너 목록 조회
     @Transactional(readOnly = true)
     public List<BannerDto> getBannerList() {
@@ -59,7 +44,7 @@ public class BannerService {
                 .collect(Collectors.toList());
     }
 
-    //배너 상세 조회(수정을 위해)
+    //배너 상세 조회
     @Transactional(readOnly = true)
     public BannerDto getBannerDtl(Long bannerId) {
         Banner banner = bannerRepository.findById(bannerId)
@@ -72,12 +57,9 @@ public class BannerService {
         bannerRepository.delete(banner);
     }
 
-    @Transactional
     public Long updateBanner(BannerDto bannerDto, MultipartFile bannerImgFile) throws Exception {
-        // 배너 엔티티 조회
         Banner banner = bannerRepository.findById(bannerDto.getId())
             .orElseThrow(() -> new EntityNotFoundException("배너를 찾을 수 없습니다. id = " + bannerDto.getId()));
-
         // 기본 정보 업데이트
         banner.updateBanner(bannerDto);
 

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div class="footer" th:fragment="footer">
+  <style>
+    h3{
+    color:#fff;
+    font-weight:800;
+    font-size : 55px;
+    font-style : italic;
+    margin-bottom : 40px;
+    }
+
+    .footer {
+      background-color: #b60217;
+      color: #fff;
+      padding: 20px;
+    }
+
+    .footer a {
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    .footer-content {
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .footer-info p {
+    color: #fff;
+      margin: 10px 0;
+      font-weight:700;
+    }
+  </style>
+
+  <footer>
+    <div class="footer-content">
+      <div class="footer-flex-container">
+        <div class="footer-info" style="display: flex; justify-content: space-between; align-items: start; gap: 20px;">
+          <div>
+            <div id="footer-map" style="width:600px;height:400px;"></div>
+          </div>
+
+          <div id="footer-content" style="flex: 1; padding: 20px;">
+            <h3>(주)MyDrama</h3>
+            <p>대표 : 김민주</p>
+            <p>주소 : 서울특별시 강서구 공항대로 518 </p>
+            <p>사업자등록번호 : 111-00-22222</p>
+            <p>대표번호 : 02-333-9999</p>
+            <p>FAX : 02-333-9999</p>
+            <a href="/agree" class="social-link">이용약관</a>
+            <a href="/legal-notice" class="social-link">법적 고지</a>
+            <p>ⓒ MYDRAMA Corp.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 나머지 스크립트 부분은 그대로 유지 -->
+  </footer>
+
+  <!-- 카카오맵 API 스크립트를 직접 포함 -->
+  <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey= 비밀키"></script>
+
+  <script th:inline="javascript">
+    window.addEventListener('load', function() {
+      var container = document.getElementById('footer-map');
+      var options = {
+        center: new kakao.maps.LatLng(37.5510287981739, 126.863577264226),
+        level: 2
+      };
+
+      var map = new kakao.maps.Map(container, options);
+
+      var iwContent = '<div style="padding:5px; text-align:center;">MyDrama</div>';
+      var iwPosition = new kakao.maps.LatLng(37.5510287981739, 126.863577264226);
+      var iwRemoveable = true;
+
+      var infowindow = new kakao.maps.InfoWindow({
+        map: map,
+        position: iwPosition,
+        content: iwContent,
+        removable: iwRemoveable
+      });
+    });
+  </script>
+</div>
+</html>

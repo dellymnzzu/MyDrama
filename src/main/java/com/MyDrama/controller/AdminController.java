@@ -240,6 +240,15 @@ public class AdminController {
         return "redirect:/admin/notice/list";
     }
 
+    @GetMapping(value = "/notice/{noticeId}")
+    public String itemDtl(Model model, @PathVariable("noticeId") Long noticeId) {
+        NoticeDto noticeDto = noticeService.getNoticeDtl(noticeId);
+        model.addAttribute("noticeDto", noticeDto);
+
+
+        return "notice/noticeDtl";
+    }
+
 
 
 

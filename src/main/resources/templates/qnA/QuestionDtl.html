@@ -8,6 +8,118 @@
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}">
 </head>
+<th:block layout:fragment="css">
+    <style>
+        /* 전체 배경 및 기본 글꼴 스타일 */
+body {
+    background-color: #f8f8f8;
+    color: #333;
+    font-family: 'Noto Sans KR', sans-serif;
+}
+
+/* 카드 스타일 */
+.card {
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+}
+
+/* 카드 헤더 스타일 */
+.card-header {
+    background-color: #ead48e; /* 서브 컬러 적용 */
+    color: #333;
+    font-weight: bold;
+}
+
+/* 상태 배지 (답변대기/완료) */
+.badge {
+    font-size: 0.9rem;
+    padding: 5px 10px;
+}
+
+.bg-warning {
+    background-color: #b60217 !important;
+    color: #fff;
+}
+
+.bg-success {
+    background-color: #28a745 !important;
+    color: #fff;
+}
+
+/* 입력 필드 스타일 */
+.form-control {
+    color: #333;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+.form-control:focus {
+    border-color: #b60217;
+    box-shadow: 0 0 5px rgba(182, 2, 23, 0.5);
+    outline: none;
+}
+
+/* 버튼 스타일 */
+.btn-primary {
+    background-color: #b60217;
+    border-color: #b60217;
+    color: #fff;
+    font-weight: bold;
+    border-radius: 5px;
+    transition: background-color 0.3s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.btn-primary:hover {
+    background-color: #950113;
+    border-color: #950113;
+    transform: scale(1.05);
+}
+
+/* 목록으로 버튼 스타일 */
+.btn-secondary {
+    background-color: #333;
+    border-color: #333;
+    color: #fff;
+    font-weight: bold;
+    border-radius: 5px;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.btn-secondary:hover {
+    background-color: #555;
+    border-color: #555;
+}
+
+/* 질문 내용 섹션 */
+.question-content h5 {
+    color: #b60217;
+    font-weight: bold;
+}
+
+/* 답변 입력 폼 */
+.answer-form textarea {
+    border: 1px solid #ead48e;
+    background-color: #fffaf0;
+}
+
+/* 답변 카드 스타일 */
+.answer-content .card {
+    border: 1px solid #ead48e;
+    background-color: #fffaf0;
+}
+
+        .badge{
+        background-color:#b60217;
+        color:#fff;
+        }
+
+
+    </style>
+</th:block>
+
 
 <div layout:fragment="content">
     <div class="container my-5">

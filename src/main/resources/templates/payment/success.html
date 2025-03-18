@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+
+<div layout:fragment="content">
+    <div class="container mt-5">
+        <div class="alert alert-success text-center" role="alert">
+            <h4 class="alert-heading">결제가 완료되었습니다!</h4>
+            <p>주문이 성공적으로 처리되었습니다.</p>
+            <hr>
+            <p class="mb-0">
+                <a href="/" class="btn btn-primary">메인으로 돌아가기</a>
+                <a href="/orders" class="btn btn-secondary">주문 내역 확인</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+</html> 

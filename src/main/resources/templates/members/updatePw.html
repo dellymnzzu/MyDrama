@@ -8,9 +8,72 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>회원가입</title>
+    <title>비밀번호 업데이트</title>
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <style>
+        body {
+            background-color: #f8f8f8;
+            color: #333;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        
+        .form-container {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 600px;
+        }
+        
+        .form-box {
+            padding: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .form-control:focus {
+            border-color: #b60217;
+            box-shadow: 0 0 0 0.2rem rgba(182, 2, 23, 0.25);
+            outline: none;
+        }
+        
+        .btn-danger {
+            background-color: #b60217;
+            border-color: #b60217;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 100%;
+        }
+        
+        .btn-danger:hover {
+            background-color: #950113;
+        }
+        
+        hr {
+            border-color: rgba(234, 212, 142, 0.3);
+            margin: 15px 0;
+        }
+        
+        .fieldError {
+            color: #b60217;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+    </style>
 </head>
 <th:block layout:fragment="css">
     <style>
@@ -63,12 +126,11 @@
 <th:block layout:fragment="script">
     <script th:inline="javascript">
         $(document).ready(function(){
-          var errorMessage = [[${errorMessage}]];
+          var errorMessage = /*[[${errorMessage}]]*/null;
           if(errorMessage != null){
             alert(errorMessage);
           }
         });
-
     </script>
 </th:block>
 

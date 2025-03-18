@@ -8,62 +8,80 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
-<th:block layout:fragment="css">
-    <style>
-        .admin-container {
-            max-width: 1200px;
-            margin: 50px auto;
-            padding: 20px;
-        }
-        
-        .stats-card {
-            background: #fff;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        .stats-title {
-            font-size: 18px;
-            color: #333;
-            margin-bottom: 15px;
-            font-weight: 600;
-        }
-        
-        .stats-number {
-            font-size: 32px;
-            color: #2c3e50;
-            font-weight: bold;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .chart-container {
-            background: #fff;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        .small-text {
-            font-size: 14px;
-            color: #666;
-            margin-top: 5px;
-        }
-        
-        @media (max-width: 768px) {
-            .stats-grid {
-                grid-template-columns: 1fr;
+    <th:block layout:fragment="css">
+        <style>
+            body {
+                background-color: #f8f8f8;
             }
-        }
-    </style>
-</th:block>
+
+            .admin-container {
+                max-width: 1200px;
+                margin: 50px auto;
+                padding: 20px;
+                background-color: #fff; /* 배경색을 흰색으로 유지 */
+            }
+
+            .stats-card {
+                background: #fff;
+                border-radius: 10px;
+                padding: 20px;
+                margin-bottom: 20px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            }
+
+            .stats-title {
+                font-size: 18px;
+                color: #333;
+                margin-bottom: 15px;
+                font-weight: 600;
+            }
+
+            .stats-number {
+                font-size: 32px;
+                color: #333; /* 폰트 색상 변경 */
+                font-weight: bold;
+            }
+
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 20px;
+                margin-bottom: 30px;
+            }
+
+            .chart-container {
+                background: #fff;
+                border-radius: 10px;
+                padding: 20px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            }
+
+            .small-text {
+                font-size: 14px;
+                color: #666;
+                margin-top: 5px;
+            }
+
+            .btn {
+                background-color: #b60217; /* 버튼 기본 색상 */
+                color: #fff;
+                padding: 10px 20px;
+                border-radius: 5px;
+                text-decoration: none;
+                display: inline-block;
+            }
+
+            .btn:hover {
+                background-color: #950113; /* 버튼 호버 색상 */
+            }
+
+            @media (max-width: 768px) {
+                .stats-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
+    </th:block>
 
 <div layout:fragment="content">
     <div class="admin-container">
@@ -95,7 +113,7 @@
             </div>
         </div>
         
-        <div class="chart-container">
+        <div class="chart-container">`
             <canvas id="visitorChart"></canvas>
         </div>
     </div>

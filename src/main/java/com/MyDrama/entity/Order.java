@@ -28,9 +28,38 @@ public class Order extends BaseEntity{
             orphanRemoval = true,fetch = FetchType.LAZY)
     private List<OrderItem> orderItems = new ArrayList<>();
 
+    @Column(name = "recipient_name")
+    private String recipientName; // 수령인 이름
+
+    @Column(name = "recipient_phone")
+    private String recipientPhone; // 수령인 전화번호
+
+    @Column(name = "zip_code")
+    private String zipCode; // 우편번호
+
+    @Column(name = "address")
+    private String address; // 기본주소
+
+    @Column(name = "detail_address")
+    private String detailAddress; // 상세주소
+
+    @Column(name = "delivery_message")
+    private String deliveryMessage; // 배송 메시지
+    
+    @Column(name = "imp_uid")
+    private String impUid; // 아임포트 결제 고유 번호
+    
+    @Column(name = "merchant_uid")
+    private String merchantUid; // 상점 거래 고유 번호
+    
+    @Column(name = "total_price")
+    private Integer totalPrice; // 결제 총 금액
+
 //    private LocalDateTime regTime;
 //
 //    private LocalDateTime updateTime;
+
+
 
     //주문서 주문아이템 리스트에 주문 아이템 추가
     //주문 아이템에 주문서 추가

@@ -94,8 +94,177 @@
 
 <th:block layout:fragment="css">
   <style>
-    button{
-    width:100%;
+    /* 기본 스타일 */
+    body {
+      font-family: 'Noto Sans KR', 'Arial', sans-serif;
+      color: #333;
+      background-color: #f8f8f8;
+    }
+    
+    .container {
+      max-width: 1000px;
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      margin-top: 20px;
+      margin-bottom: 50px;
+    }
+    
+    /* 제목 스타일 */
+    h4 {
+      color: #b60217;
+      font-weight: 600;
+      margin-top: 20px;
+      margin-bottom: 10px;
+      font-size: 1.1rem;
+    }
+    
+    /* 선택 그룹 스타일 */
+    .select-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .select-group {
+      margin-bottom: 15px;
+    }
+    
+    /* 폼 요소 스타일 */
+    .form-select, .form-control {
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 10px;
+      font-size: 14px;
+      width: 100%;
+      transition: all 0.3s;
+    }
+    
+    .form-select:focus, .form-control:focus {
+      border-color: #b60217;
+      box-shadow: 0 0 0 0.2rem rgba(182, 2, 23, 0.25);
+    }
+    
+    /* 입력 그룹 스타일 */
+    .input-group {
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .input-group-text {
+      background-color: #b60217;
+      color: white;
+      border: none;
+      border-radius: 4px 4px 0 0;
+      padding: 10px 15px;
+      font-weight: 500;
+    }
+    
+    .input-group .form-control {
+      border-radius: 0 0 4px 4px;
+      margin-bottom: 15px;
+    }
+    
+    /* 텍스트 영역 스타일 */
+    textarea {
+      width: 100%;
+      min-height: 200px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 15px;
+      margin-bottom: 20px;
+      resize: vertical;
+    }
+    
+    textarea:focus {
+      border-color: #b60217;
+      box-shadow: 0 0 0 0.2rem rgba(182, 2, 23, 0.25);
+      outline: none;
+    }
+    
+    /* 버튼 스타일 */
+    button {
+      width: 100%;
+      background-color: #b60217;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 12px;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      margin-top: 10px;
+    }
+    
+    button:hover {
+      background-color: #94011a;
+    }
+    
+    /* 이미지 업로드 스타일 */
+    .imageFile {
+      background-color: #f9f9f9;
+      border: 1px dashed #ccc;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+    }
+    
+    .imageFile:hover {
+      background-color: #f1f1f1;
+      border-color: #b60217;
+    }
+    
+    /* 이미지 미리보기 스타일 */
+    #imagePreview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    
+    #imagePreview img {
+      border: 2px solid #ead48e;
+      border-radius: 4px;
+      object-fit: cover;
+    }
+    
+    /* 오류 메시지 스타일 */
+    .fieldError {
+      color: #b60217;
+      font-size: 13px;
+      margin-top: -10px;
+      margin-bottom: 10px;
+    }
+    
+    /* 상품 상태 선택 스타일 */
+    select[name="itemSellStatus"] {
+      background-color: #ead48e;
+      font-weight: 600;
+      color: #333;
+    }
+    
+    /* 라벨 스타일 */
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #333;
+      font-weight: 500;
+    }
+    
+    /* 반응형 조정 */
+    @media (max-width: 768px) {
+      .select-container {
+        grid-template-columns: 1fr;
+      }
+      .my-5{
+      background-color:#fff;}
+      
+
+
     }
   </style>
 </th:block>
@@ -107,6 +276,7 @@
   <input type="hidden" th:field = "*{id}">
   <div class = "select-container">
     <div class = "select-group">
+      <h4>상품 상태</h4>
       <select th:field = "*{itemSellStatus}" class = "form-select">
         <option value="SELL">판매중</option>
         <option value="SOLD_OUT">품절</option>
@@ -165,11 +335,14 @@
   </div>
 
 <div class = "input-group">
-  <div class = "input-group-prepend">
-    <span  class = "input-group-text">제목</span>
-  </div>
-  <input type = "text" th:field="*{title}" class = "form-control" placeholder="제목을 입력하세요.">
-  <p th:if="${#fields.hasErrors('title')}" th:errors="*{title}" class="fieldError">Incorrect data</p>
+  <div class="form-row-container">
+    <div class="form-item">
+      <div class="input-group-prepend">
+        <span class="input-group-text">제목</span>
+      </div>
+      <input type="text" th:field="*{title}" class="form-control" placeholder="제목을 입력하세요.">
+      <p th:if="${#fields.hasErrors('title')}" th:errors="*{title}" class="fieldError">Incorrect data</p>
+    </div>
 
   <input type = "number" th:field = "*{price}" class = "form-control" placeholder="상품의 가격을 입력해주세요.">
   <p th:if="${#fields.hasErrors('price')}" th:errors="*{price}" class="fieldError">Incorrect data</p>

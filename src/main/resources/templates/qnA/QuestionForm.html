@@ -11,6 +11,82 @@
         <meta name="_csrf_header" th:content="${_csrf.headerName}">
         <title>문의하기</title>
       </head>
+      <th:block layout:fragment="css">
+          <style>
+              /* 전체 배경 및 기본 글꼴 색상 */
+              body {
+                  background-color: #f8f8f8;
+                  color: #333;
+                  font-family: 'Noto Sans KR', sans-serif;
+              }
+              .my-5{
+              border : 1px solid #fff;
+              background-color: #fff;
+               border-radius: 5px;
+              }
+
+              /* 입력 필드 스타일 */
+              .form-control {
+                  color: #444;
+                  background-color: #fff;
+                  border: 1px solid #ccc;
+                  border-radius: 5px;
+                  padding: 10px;
+              }
+
+              .form-control:focus {
+                  border-color: #b60217;
+                  box-shadow: 0 0 5px rgba(182, 2, 23, 0.5);
+                  outline: none;
+              }
+
+              /* 버튼 스타일 */
+              .btn-primary {
+                  background-color: #b60217;
+                  border-color: #b60217;
+                  color: #fff;
+                  font-weight: bold;
+                  border-radius: 5px;
+                  transition: background-color 0.3s ease-in-out, transform 0.2s ease-in-out;
+              }
+
+              .btn-primary:hover {
+                  background-color: #950113;
+                  border-color: #950113;
+                  transform: scale(1.05);
+              }
+
+              /* 취소(목록으로) 버튼 스타일 */
+              .btn-secondary {
+                  background-color: #ead48e;
+                  border-color: #ead48e;
+                  color: #fff;
+                  font-weight: bold;
+                  border-radius: 5px;
+                  transition: background-color 0.3s ease-in-out;
+              }
+
+
+
+              /* 제목 스타일 */
+              h2 {
+                  font-weight: bold;
+                  color: #b60217;
+              }
+
+              /* 오류 메시지 스타일 */
+              .alert-danger {
+                  font-size: 0.9rem;
+                  padding: 8px;
+                  border-radius: 5px;
+              }
+
+              label{
+              font-weight:700;
+              }
+
+          </style>
+      </th:block>
 
 <div layout:fragment="content">
     <div class="container my-5">

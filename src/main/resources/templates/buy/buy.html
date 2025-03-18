@@ -1,0 +1,428 @@
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+
+<head>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
+
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+
+  <meta id="userEmail" th:attr="data-value=${currentUserEmail}"/>
+  <meta id="userName" th:attr="data-value=${currentUserName}"/>
+  <meta id="userTel" th:attr="data-value=${currentUserTel}"/>
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+
+
+  <th:block layout:fragment="script">
+    <script th:inline="javascript">
+      $(document).ready(function () {
+          // CSRF 토큰을 모든 AJAX 요청에 자동으로 추가
+          $.ajaxSetup({
+              beforeSend: function (xhr) {
+                  const token = $('meta[name="_csrf"]').attr('content');
+                  const header = $('meta[name="_csrf_header"]').attr('content');
+                  if (token && header) {
+                      xhr.setRequestHeader(header, token);
+                  }
+              }
+          });
+      });
+
+      var IMP = window.IMP;
+      IMP.init("imp56360830"); // 가맹점 식별코드
+
+      function handleSubscribe(button) {
+      // 버튼의 부모 카드에서 데이터 읽기
+      const card = button.closest('.card');                        // 가장 가까운 .card 요소 찾기
+      const name = card.getAttribute('data-name');                 // 구독 이름
+      const detail = card.getAttribute('data-detail');             // 구독 상세
+      const price = card.getAttribute('data-price');               // 구독 가격
+      const subscription = card.getAttribute('data-subscription'); // 구독 상태
+
+      // 데이터 출력 (필요에 따라 사용)
+      console.log("Subscribe Name:", name);
+      console.log("Subscribe Detail:", detail);
+      console.log("Subscribe Price:", price);
+      console.log("Subscribe Type:", subscription);
+
+      // 추가 작업: 예를 들어 결제 함수 호출
+      requestPay(name, price, subscription);
+      }
+
+
+      function requestPay(name, amount, subscription) {
+
+
+      const currentUser = {
+      email: $("#userEmail").attr("data-value") || "default@test.com",
+      name: $("#userName").attr("data-value") || "임시이름",
+      tel: $("#userTel").attr("data-value") || "010-1234-5678"
+       };
+       console.log("현재 사용자 정보:", currentUser);
+
+         // 고객 식별자 생성 (예: 이메일 기반 고유 값)
+        const customerUid = "CUST_" + currentUser.email;
+        console.log("Customer UID:", customerUid); // 디버깅용 출력
+
+        const selectedPG = document.querySelector('input[name="pg"]:checked').value;
+
+             IMP.request_pay({
+              pg: "kakaopay",
+              pay_method: "card",
+              merchant_uid: "ORDER_" + new Date().getTime(),
+              name: name,
+              amount: amount,
+              buyer_email: currentUser.email,
+              buyer_name: currentUser.name,
+              buyer_tel: currentUser.tel
+          },
+          function(rsp) {
+              if (rsp.success) {
+                  const token = $("meta[name='_csrf']").attr("content");
+                  const header = $("meta[name='_csrf_header']").attr("content");
+
+                  const requestData = {
+                     subscribeNm: name,
+                     impUid: rsp.imp_uid,
+                     merchantUid: rsp.merchant_uid,
+                     customerUid: customerUid, // 고객 식별자 추가
+                     price: rsp.paid_amount,
+                     status: rsp.status,
+                     buyerName: currentUser.name,
+                     buyerEmail: currentUser.email,
+                     buyerTel: currentUser.tel,
+                     subscription: subscription
+                   };
+
+                   console.log("전송 데이터:", requestData);
+
+
+                  jQuery.ajax({
+                   url: "/payment/complete",
+                     method: "POST",
+                        headers: {"Content-Type": "application/json", [header]: token},
+                      data: JSON.stringify({
+                      "subscribeNm": name,
+                      "impUid": rsp.imp_uid,
+                      "merchantUid": rsp.merchant_uid,
+                      "customerUid": customerUid,
+                      "price": rsp.paid_amount,
+                      "status": rsp.status,
+                      "buyerName": currentUser.name,
+                      "buyerEmail": currentUser.email,
+                      "buyerTel": currentUser.tel,
+                      "subscription": subscription
+                   })
+
+
+                  }).done(function (response) {
+                      console.log(response);
+                      alert('결제가 완료되었습니다.');
+                      window.location.href = "/payment/success";
+                  })
+              } else {
+
+                  alert('결제가 실패헀습니다.'  + rsp.error_msg);
+                  window.location.href = "/payment/failure";
+              }
+          });
+  }
+  document.addEventListener('DOMContentLoaded', function () {
+  function confirmEdit(element) {
+      const url = element.getAttribute("data-url");
+      const confirmMessage = "수정 페이지로 이동하시겠습니까?";
+      if (confirm(confirmMessage)) {
+          window.location.href = url;
+      } else {
+          console.log("수정 취소");
+      }
+  }
+
+  function confirmDelete(element) {
+      const url = element.getAttribute("data-url");
+      const confirmMessage = "정말 삭제하시겠습니까?";
+      if (confirm(confirmMessage)) {
+          const form = document.createElement('form');
+          form.method = 'post';
+          form.action = url;
+
+          const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+          const csrfInput = document.createElement('input');
+          csrfInput.type = 'hidden';
+          csrfInput.name = '_csrf';
+          csrfInput.value = csrfToken;
+          form.appendChild(csrfInput);
+
+          document.body.appendChild(form);
+          form.submit();
+      } else {
+          console.log("삭제 취소");
+      }
+  }
+
+  window.confirmEdit = confirmEdit;
+  window.confirmDelete = confirmDelete;
+});
+    </script>
+  </th:block>
+
+
+  <style>
+    body {
+        background-color: #141414; /* 기존 배경색 유지 */
+        color: #fff;
+        font-family: Arial, sans-serif;
+    }
+
+    .card {
+        height: 700px; /* 카드 세로 크기 */
+        width: 400px; /* 부모 요소 크기에 맞춤 */
+        border: 1px solid #444;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+        overflow: hidden;
+        background-color: rgba(0, 0, 0, 0.75); /* 카드 배경색 동일 */
+        display: flex;
+        flex-direction: column;
+        position: relative; /* 내부 요소의 절대 위치를 허용 */
+    }
+
+    /* 상품명 */
+    .product-name {
+        position: absolute; /* 절대 위치 */
+        top: 50px; /* 카드 상단에서 20px */
+        left: 20px; /* 왼쪽 여백 */
+        width: calc(100% - 40px); /* 카드 너비에 맞춤 (여백 고려) */
+        text-align: center;
+    }
+
+    .product-name h5 {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #fff;
+    }
+
+    /* 상세설명 */
+    .product-description {
+        position: absolute;
+        top: 150px; /* 상품명 아래 */
+        left: 20px;
+        width: calc(100% - 40px);
+        white-space: pre-wrap; /* 줄바꿈과 공백 유지 */
+        word-wrap: break-word; /* 긴 단어 줄바꿈 */
+        overflow-wrap: break-word; /* 추가 줄바꿈 */
+       font-size: clamp(12px, 2vw, 16px); /* 글씨 크기를 반응형으로 조정 */
+       line-height: 1.5; /* 텍스트 가독성을 위한 줄 간격 */
+    }
+
+    .product-description p {
+        font-size: 1rem;
+        color: #ddd;
+        line-height: 1.5;
+    }
+
+    /* 구독이름 */
+    .subscription-name {
+        position: absolute;
+        top: 450px; /* 상세설명 아래 */
+        left: 20px;
+        width: calc(100% - 40px);
+    }
+
+    .subscription-name p {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #6a0dad;
+    }
+
+    /* 가격 */
+    .product-price {
+        position: absolute;
+        top: 500px; /* 구독이름 아래 */
+        left: 20px;
+        width: calc(100% - 40px);
+        text-align: center;
+    }
+
+    .product-price h6 {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #00d084;
+    }
+
+    /* 라디오 버튼 */
+    .radio-group {
+        position: absolute;
+        top: 580px; /* 가격 아래 */
+        left: 20px;
+        width: calc(100% - 40px);
+        display: flex;
+        justify-content: center; /* 중앙 정렬 */
+        gap: 10px;
+    }
+
+    .radio-group label {
+        color: #fff;
+        font-size: 0.9rem;
+        cursor: pointer;
+    }
+
+    .radio-group input {
+        margin-right: 5px; /* 버튼과 텍스트 간 간격 */
+    }
+
+    /* 구독하기 버튼 */
+    .btn {
+        position: absolute;
+        bottom: 20px; /* 카드 하단에서 20px */
+        left: 20px;
+        width: calc(100% - 40px); /* 카드 내부 너비 */
+        background-color: #6a0dad;
+        border: none;
+        color: #fff;
+        padding: 10px 20px;
+        font-size: 16px;
+        border-radius: 5px;
+        text-align: center;
+    }
+
+    .btn:hover {
+        background-color: #7b1fab;
+    }
+
+    .btn:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(106, 13, 173, 0.5);
+    }
+
+.row {
+   display: flex;
+   flex-wrap: wrap; /* 카드가 화면 크기에 맞지 않을 경우 줄바꿈 */
+   gap: 2rem; /* 카드 사이의 간격 */
+   justify-content: center; /* 카드 중앙 정렬 */
+ }
+
+ .col {
+   flex: 1 1 calc(33.33% - 2rem); /* 기본적으로 3열 레이아웃 */
+   max-width: calc(33.33% - 2rem); /* 최대 너비 제한 */
+   min-width: 400px; /* 카드 최소 너비 */
+   box-sizing: border-box; /* 패딩 및 보더 포함 크기 계산 */
+ }
+
+ @media (max-width: 768px) {
+   .col {
+     flex: 1 1 calc(50% - 1rem); /* 태블릿: 2열 레이아웃 */
+     max-width: calc(50% - 1rem);
+   }
+ }
+
+ @media (max-width: 576px) {
+   .col {
+     flex: 1 1 100%; /* 모바일: 1열 레이아웃 */
+     max-width: 100%;
+   }
+ }
+
+     .settings-btn {
+    position: absolute; /* 카드의 상단 우측에 위치 */
+    top: 8px;
+    right: 30px;
+    font-size: 15px; /* 아이콘 크기 */
+    color: #6a0dad; /* 톱니바퀴 색상 */
+    text-decoration: none; /* 밑줄 제거 */
+    background: none; /* 배경 제거 */
+    border: none; /* 테두리 제거 */
+    cursor: pointer; /* 클릭 가능한 커서 */
+}
+
+.settings-btn:hover {
+    color: #7b1fab; /* 호버 시 색상 변경 */
+}
+
+.fas.fa-cog {
+    display: inline-block;
+}
+
+     .delete-btn {
+    position: absolute;
+    top: 6px;
+    right: 10px; /* 톱니바퀴 바로 옆 */
+    font-size: 19px;
+    color: #bd2130; /* 빨간색 */
+    text-decoration: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.delete-btn:hover {
+    color: #e3342f; /* 호버 시 색상 변경 */
+}
+  </style>
+</head>
+
+<body>
+<div layout:fragment="content">
+  <div class="container text-center">
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+      <div th:each="subscribe : ${subscribes}" class="col">
+        <div class="card h-100">
+          <div class="card"
+               th:data-name="${subscribe.subscribeNm}"
+               th:data-detail="${subscribe.subscribeDetail}"
+               th:data-subscription="${subscribe.subscription}"
+               th:data-price="${subscribe.price}">
+
+            <a href="#" class="settings-btn"
+               onclick="confirmEdit(this)"
+               th:data-url="@{'/admin/subscribe/' + ${subscribe.id}}"
+               th:if="${isAdmin}">
+              <i class="fas fa-cog"></i>
+            </a>
+
+            <a href="#" class="delete-btn"
+               onclick="confirmDelete(this)"
+               th:data-url="@{'/admin/subscribe/delete/' + ${subscribe.id}}"
+               th:if="${isAdmin}">
+              <i class="fas fa-times"></i>
+            </a>
+
+            <div class="card-body">
+              <div class="product-name">
+                <h5 class="card-title" th:text="${subscribe.subscribeNm}"></h5>
+              </div>
+              <div class="product-description">
+                <p class="card-text" th:utext="${subscribe.subscribeDetail}"></p>
+              </div>
+              <div class="subscription-name">
+                <p class="card-text" th:text="${subscribe.subscription.displayName}"></p>
+              </div>
+              <div class="product-price">
+                <h6 class="price-text" th:text="${subscribe.price + ' 원'}"></h6>
+              </div>
+              <div class="radio-group">
+                <label>
+                  <input type="radio" name="pg" value="danal_tpay" checked> 신용카드 결제
+                </label>
+                <label>
+                  <input type="radio" name="pg" value="danal"> 휴대폰 소액결제
+                </label>
+              </div>
+              <button type="button" class="btn btn-primary mt-2" onclick="handleSubscribe(this)">구독하기
+              </button>
+              <script src="https://cdn.iamport.kr/js/iamport.payment-1.2.0.js"></script>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -9,13 +9,18 @@
 <th:block layout:fragment="script">
   <script th:inline="javascript">
     function cancelOrder(orderId){
+        if(!confirm('주문을 취소하시겠습니까? 결제가 있는 경우 환불 처리가 진행됩니다.')) {
+            return;
+        }
+        
         var token = $("meta[name='_csrf']").attr("content");
         var header = $("meta[name='_csrf_header']").attr("content");
 
         var url = "/order/" + orderId +"/cancel";
+
         var paramData = {
-            orderId : orderId,
-        }
+            orderId : orderId
+        };
 
         var param = JSON.stringify(paramData);
 
@@ -31,15 +36,17 @@
             dataType : "json",
             cache : false,
             success : function(result, status){
-                alert("주문이 취소 되었습니다.");
-                location.href='/orders/'+[[${page}]];
+                alert("주문이 취소되었으며, 결제된 금액은 환불 처리되었습니다.");
+                location.href='/orders/'+ /*[[${page}]]*/ 0;
             },
             error : function(jqXHR, status, error){
                 if(jqXHR.status == '401'){
                     alert('로그인 후 이용해주세요.');
                     location.href='/members/login';
-                }else{
-                    alert(jqXHR.responseText);
+                } else if(jqXHR.status == '403'){
+                    alert('주문 취소 권한이 없습니다.');
+                } else {
+                    alert(jqXHR.responseText || '주문 취소 중 오류가 발생했습니다.');
                 }
             }
         });
@@ -48,33 +55,102 @@
 </th:block>
 <th:block layout:fragment="css">
   <style>
-    .content-mg{
-        margin-left:30%;
-        margin-right:30%;
-        margin-top:2%;
-        margin-bottom:100px;
-    }
-    .repImgDiv{
-        margin-right:15px;
-        margin-left:15px;
-        height:auto;
-    }
-    .repImg{
-        height:100px;
-        width:100px;
-    }
-    .card{
-        width:750px;
-        height:100%;
-        padding:30px;
-        margin-bottom:20px;
-    }
-    .fs18{
-        font-size:18px;
-    }
-    .fs24{
-        font-size:24px;
-    }
+    /* 전체 배경 및 기본 글꼴 스타일 */
+body {
+    background-color: #f8f8f8;
+    color: #333;
+    font-family: 'Noto Sans KR', sans-serif;
+}
+
+/* 콘텐츠 여백 조정 */
+.content-mg {
+    padding: 30px;
+}
+
+/* 제목 스타일 */
+h2, h4 {
+    font-weight: bold;
+    color: #b60217;
+}
+
+/* 주문 카드 스타일 */
+.card {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 주문 날짜 스타일 */
+h4 {
+    margin-bottom: 10px;
+    font-size: 1.3rem;
+}
+
+/* 주문 취소 버튼 */
+.btn-outline-secondary {
+    color: #b60217;
+    border-color: #b60217;
+    font-weight: bold;
+    transition: all 0.3s ease-in-out;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #950113;
+    border-color: #950113;
+    color: #fff;
+    transform: scale(1.05);
+}
+
+/* 주문 취소 완료 표시 */
+h4:has(+ div h4) {
+    color: #950113;
+}
+
+/* 상품 이미지 스타일 */
+.repImgDiv img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid #ead48e; /* 서브 컬러 적용 */
+    margin-right: 15px;
+}
+
+/* 상품 정보 스타일 */
+.fs24 {
+    font-size: 1.4rem;
+    font-weight: bold;
+}
+
+.fs18 {
+    font-size: 1.1rem;
+}
+
+/* 페이지네이션 스타일 */
+.pagination {
+    margin-top: 20px;
+}
+
+.page-item .page-link {
+    color: #b60217;
+    border: 1px solid #ead48e;
+    background-color: #fff;
+    transition: all 0.3s ease-in-out;
+}
+
+.page-item.active .page-link {
+    background-color: #b60217;
+    color: #fff;
+    border-color: #b60217;
+}
+
+.page-item .page-link:hover {
+    background-color: #950113;
+    color: #fff;
+    border-color: #950113;
+}
   </style>
 </th:block>
 
@@ -84,11 +160,11 @@
     <div class="d-flex mb-3 align-self-center">
       <h4 th:text="${order.orderDate} + '주문'"></h4>
       <div class="ml-3">
-        <th:block th:if="${order.orderStatus == T(com.shop.constant.OrderStatus).ORDER}">
+        <th:block th:if="${order.orderStatus == T(com.MyDrama.constant.OrderStatus).ORDER}">
           <button type="button" class="btn btn-outline-secondary" th:value="${order.orderId}"
                   onclick="cancelOrder(this.value)">주문취소</button>
         </th:block>
-        <th:block th:unless="${order.orderStatus == T(com.shop.constant.OrderStatus).ORDER}">
+        <th:block th:unless="${order.orderStatus == T(com.MyDrama.constant.OrderStatus).ORDER}">
           <h4>(취소 완료)</h4></th:block>
       </div>
     </div>
@@ -96,7 +172,7 @@
     <div class="card d-flex">
       <div th:each="orderItem : ${order.orderItemDtoList}" class="d-flex mb-3">
         <div class="repImgDiv">
-          <img th:src="${orderItem.imgUrl}" class = "rounded repImg" th:alt="${orderItem.itemNm}">
+          <img th:src="@{${orderItem.oriImgName}}" class="rounded" width="100">
         </div>
         <div class="align-self-center w-75">
           <span th:text="${orderItem.itemNm}" class="fs24 font-weight-bold"></span>
