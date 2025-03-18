@@ -105,140 +105,199 @@
 
 
 ```
-📂 src
-│   📄 README.md
-│
-├── 📂 main
-│   ├── 📂 java
-│   │   └── 📂 com
-│   │       └── 📂 MyDrama
-│   │           ├── 📄 MyDramaApplication.java
-│   │           │
-│   │           ├── 📂 config
-│   │           │   ├── 📄 AuditConfig.java
-│   │           │   ├── 📄 AuditorAwareImpl.java
-│   │           │   ├── 📄 CustomAuthenticationEntryPoint.java
-│   │           │   ├── 📄 CustomOAuth2UserService.java
-│   │           │   ├── 📄 MailConfig.java
-│   │           │   ├── 📄 OAuthAttributes.java
-│   │           │   ├── 📄 SecurityConfig.java
-│   │           │   ├── 📄 SecurityUtil.java
-│   │           │   ├── 📄 VisitorInterceptor.java
-│   │           │   ├── 📄 WebMvcConfig.java
-│   │           │   ├── 📄 WebSocketConfig.java
-│   │           │
-│   │           ├── 📂 constant
-│   │           │   ├── 📄 Category.java
-│   │           │   ├── 📄 Gender.java
-│   │           │   ├── 📄 ItemSellStatus.java
-│   │           │   ├── 📄 LINE.java
-│   │           │   ├── 📄 MainCategory.java
-│   │           │   ├── 📄 Membership.java
-│   │           │   ├── 📄 OrderStatus.java
-│   │           │   ├── 📄 QuestionStatus.java
-│   │           │   ├── 📄 Role.java
-│   │           │   ├── 📄 SkinConcern.java
-│   │           │
-│   │           ├── 📂 controller
-│   │           │   ├── 📄 AdminController.java
-│   │           │   ├── 📄 CartController.java
-│   │           │   ├── 📄 ChatController.java
-│   │           │   ├── 📄 CommentController.java
-│   │           │   ├── 📄 ItemController.java
-│   │           │   ├── 📄 MainController.java
-│   │           │   ├── 📄 MemberController.java
-│   │           │   ├── 📄 OrderController.java
-│   │           │   ├── 📄 PaymentController.java
-│   │           │   ├── 📄 QnAController.java
-│   │           │
-│   │           ├── 📂 dto
-│   │           │   ├── 📄 AnswerDto.java
-│   │           │   ├── 📄 BannerDto.java
-│   │           │   ├── 📄 CartDetailDto.java
-│   │           │   ├── 📄 CartItemDto.java
-│   │           │   ├── 📄 CartOrderDto.java
-│   │           │   ├── 📄 CartPaymentDto.java
-│   │           │   ├── 📄 ChatRoomDto.java
-│   │           │   ├── 📄 CommentDto.java
-│   │           │   ├── 📄 CommentFormDto.java
-│   │           │   ├── 📄 ItemCrawlerDto.java
-│   │           │   ├── 📄 ItemDto.java
-│   │           │   ├── 📄 ItemFormDto.java
-│   │           │   ├── 📄 ItemImgDto.java
-│   │           │   ├── 📄 ItemSearchDto.java
-│   │           │   ├── 📄 MainItemDto.java
-│   │           │   ├── 📄 MemberDto.java
-│   │           │   ├── 📄 MemberFormDto.java
-│   │           │   ├── 📄 MemberupdateDto.java
-│   │           │   ├── 📄 NoticeDto.java
-│   │           │   ├── 📄 OrderDto.java
-│   │           │   ├── 📄 OrderHistDto.java
-│   │           │   ├── 📄 OrderItemDto.java
-│   │           │   ├── 📄 PasswordChangeFormDto.java
-│   │           │   ├── 📄 PaymentDto.java
-│   │           │   ├── 📄 QuestionDto.java
-│   │           │   ├── 📄 QuestionForm.java
-│   │           │   ├── 📄 SessionUser.java
-│   │           │   ├── 📄 VisitorCountDto.java
-│   │           │
-│   │           ├── 📂 entity
-│   │           │   ├── 📄 Answer.java
-│   │           │   ├── 📄 Banner.java
-│   │           │   ├── 📄 BaseEntity.java
-│   │           │   ├── 📄 BaseTimeEntity.java
-│   │           │   ├── 📄 Cart.java
-│   │           │   ├── 📄 CartItem.java
-│   │           │   ├── 📄 ChatMessage.java
-│   │           │   ├── 📄 ChatRoom.java
-│   │           │   ├── 📄 Comment.java
-│   │           │   ├── 📄 Item.java
-│   │           │   ├── 📄 ItemCrawl.java
-│   │           │   ├── 📄 ItemImg.java
-│   │           │   ├── 📄 ItemLike.java
-│   │           │   ├── 📄 Member.java
-│   │           │   ├── 📄 Notice.java
-│   │           │   ├── 📄 Order.java
-│   │           │   ├── 📄 OrderItem.java
-│   │           │   ├── 📄 Payment.java
-│   │           │   ├── 📄 Question.java
-│   │           │   ├── 📄 SnsMember.java
-│   │           │   ├── 📄 VisitorCount.java
-│   │           │
-│   │           ├── 📂 repository
-│   │           │   ├── 📄 AnswerRepository.java
-│   │           │   ├── 📄 BannerRepository.java
-│   │           │   ├── 📄 CartItemRepository.java
-│   │           │   ├── 📄 CartRepository.java
-│   │           │   ├── 📄 ChatMessageRepository.java
-│   │           │   ├── 📄 ChatRoomRepository.java
-│   │           │   ├── 📄 CommentRepository.java
-│   │           │   ├── 📄 ItemRepository.java
-│   │           │   ├── 📄 MemberRepository.java
-│   │           │   ├── 📄 OrderRepository.java
-│   │           │   ├── 📄 PaymentRepository.java
-│   │           │
-│   │           ├── 📂 service
-│   │           │   ├── 📄 AnswerService.java
-│   │           │   ├── 📄 ChatbotService.java
-│   │           │   ├── 📄 ChatService.java
-│   │           │   ├── 📄 ItemService.java
-│   │           │   ├── 📄 MemberService.java
-│   │           │   ├── 📄 OrderService.java
-│   │           │
-│   ├── 📂 resources
-│   │   ├── 📂 static
-│   │   │   ├── 📂 css
-│   │   │   │   ├── 📄 layout.css
-│   │   │   │   ├── 📄 layout1.css
-│   │   │   ├── 📂 img
-│   │   │       ├── 🖼 correction_btn.png
-│   │   │       ├── 🖼 delete_btn.png
-│   │   ├── 📂 templates
-│   │       ├── 📄 main.html
-│   │       ├── 📂 admin
-│   │       │   ├── 📄 admin.html
-│   │       ├── 📂 cart
-│   │       │   ├── 📄 cartList.html
+📁 src
+├── 📄 README.md
+├── 📁 main
+│ ├── 📁 java
+│ │ └── 📁 com
+│ │ └── 📁 MyDrama
+│ │ ├── 📄 MyDramaApplication.java
+│ │ ├── 📁 config
+│ │ │ ├── 📄 AuditConfig.java
+│ │ │ ├── 📄 AuditorAwareImpl.java
+│ │ │ ├── 📄 CustomAuthenticationEntryPoint.java
+│ │ │ ├── 📄 CustomOAuth2UserService.java
+│ │ │ ├── 📄 MailConfig.java
+│ │ │ ├── 📄 OAuthAttributes.java
+│ │ │ ├── 📄 SecurityConfig.java
+│ │ │ ├── 📄 SecurityUtil.java
+│ │ │ ├── 📄 VisitorInterceptor.java
+│ │ │ ├── 📄 WebMvcConfig.java
+│ │ │ └── 📄 WebSocketConfig.java
+│ │ ├── 📁 constant
+│ │ │ ├── 📄 Category.java
+│ │ │ ├── 📄 Gender.java
+│ │ │ ├── 📄 ItemSellStatus.java
+│ │ │ ├── 📄 LINE.java
+│ │ │ ├── 📄 MainCategory.java
+│ │ │ ├── 📄 Membership.java
+│ │ │ ├── 📄 OrderStatus.java
+│ │ │ ├── 📄 QuestionStatus.java
+│ │ │ ├── 📄 Role.java
+│ │ │ └── 📄 SkinConcern.java
+│ │ ├── 📁 controller
+│ │ │ ├── 📄 AdminController.java
+│ │ │ ├── 📄 CartController.java
+│ │ │ ├── 📄 ChatController.java
+│ │ │ ├── 📄 CommentController.java
+│ │ │ ├── 📄 ItemController.java
+│ │ │ ├── 📄 MainController.java
+│ │ │ ├── 📄 MemberController.java
+│ │ │ ├── 📄 OrderController.java
+│ │ │ ├── 📄 PaymentController.java
+│ │ │ └── 📄 QnAController.java
+│ │ ├── 📁 dto
+│ │ │ ├── 📄 AnswerDto.java
+│ │ │ ├── 📄 BannerDto.java
+│ │ │ ├── 📄 CartDetailDto.java
+│ │ │ ├── 📄 CartItemDto.java
+│ │ │ ├── 📄 CartOrderDto.java
+│ │ │ ├── 📄 CartPaymentDto.java
+│ │ │ ├── 📄 ChatRoomDto.java
+│ │ │ ├── 📄 CommentDto.java
+│ │ │ ├── 📄 CommentFormDto.java
+│ │ │ ├── 📄 ItemCrawlerDto.java
+│ │ │ ├── 📄 ItemDto.java
+│ │ │ ├── 📄 ItemFormDto.java
+│ │ │ ├── 📄 ItemImgDto.java
+│ │ │ ├── 📄 ItemSearchDto.java
+│ │ │ ├── 📄 MainItemDto.java
+│ │ │ ├── 📄 MemberDto.java
+│ │ │ ├── 📄 MemberFormDto.java
+│ │ │ ├── 📄 MemberupdateDto.java
+│ │ │ ├── 📄 NoticeDto.java
+│ │ │ ├── 📄 OrderDto.java
+│ │ │ ├── 📄 OrderHistDto.java
+│ │ │ ├── 📄 OrderItemDto.java
+│ │ │ ├── 📄 PasswordChangeFormDto.java
+│ │ │ ├── 📄 PaymentDto.java
+│ │ │ ├── 📄 QuestionDto.java
+│ │ │ ├── 📄 QuestionForm.java
+│ │ │ ├── 📄 SessionUser.java
+│ │ │ └── 📄 VisitorCountDto.java
+│ │ ├── 📁 entity
+│ │ │ ├── 📄 Answer.java
+│ │ │ ├── 📄 Banner.java
+│ │ │ ├── 📄 BaseEntity.java
+│ │ │ ├── 📄 BaseTimeEntity.java
+│ │ │ ├── 📄 Cart.java
+│ │ │ ├── 📄 CartItem.java
+│ │ │ ├── 📄 ChatMessage.java
+│ │ │ ├── 📄 ChatRoom.java
+│ │ │ ├── 📄 Comment.java
+│ │ │ ├── 📄 Item.java
+│ │ │ ├── 📄 ItemCrawl.java
+│ │ │ ├── 📄 ItemImg.java
+│ │ │ ├── 📄 ItemLike.java
+│ │ │ ├── 📄 Member.java
+│ │ │ ├── 📄 Notice.java
+│ │ │ ├── 📄 Order.java
+│ │ │ ├── 📄 OrderItem.java
+│ │ │ ├── 📄 Payment.java
+│ │ │ ├── 📄 Question.java
+│ │ │ ├── 📄 SnsMember.java
+│ │ │ └── 📄 VisitorCount.java
+│ │ ├── 📁 exception
+│ │ │ └── 📄 OutOfstockException.java
+│ │ ├── 📁 repository
+│ │ │ ├── 📄 AnswerRepository.java
+│ │ │ ├── 📄 BannerRepository.java
+│ │ │ ├── 📄 CartItemRepository.java
+│ │ │ ├── 📄 CartRepository.java
+│ │ │ ├── 📄 ChatMessageRepository.java
+│ │ │ ├── 📄 ChatRoomRepository.java
+│ │ │ ├── 📄 CommentRepository.java
+│ │ │ ├── 📄 ItemCrawlerRepository.java
+│ │ │ ├── 📄 ItemImgRepository.java
+│ │ │ ├── 📄 ItemRepository.java
+│ │ │ ├── 📄 ItemRepositoryCustom.java
+│ │ │ ├── 📄 ItemRepositoryCustomImpl.java
+│ │ │ ├── 📄 MemberRepository.java
+│ │ │ ├── 📄 NoticeRepository.java
+│ │ │ ├── 📄 OrderItemRepository.java
+│ │ │ ├── 📄 OrderRepository.java
+│ │ │ ├── 📄 QuestionRepository.java
+│ │ │ ├── 📄 SnsMemberRepository.java
+│ │ │ └── 📄 VisitorCountRepository.java
+│ │ └── 📁 service
+│ │ ├── 📄 AnswerService.java
+│ │ ├── 📄 BannerService.java
+│ │ ├── 📄 CartService.java
+│ │ ├── 📄 ChatbotService.java
+│ │ ├── 📄 ChatService.java
+│ │ ├── 📄 CommentService.java
+│ │ ├── 📄 ContentService.java
+│ │ ├── 📄 ExcelService.java
+│ │ ├── 📄 FileService.java
+│ │ ├── 📄 ItemService.java
+│ │ ├── 📄 MailService.java
+│ │ ├── 📄 MemberService.java
+│ │ ├── 📄 NoticeService.java
+│ │ ├── 📄 OrderService.java
+│ │ ├── 📄 PaymentService.java
+│ │ ├── 📄 QuestionService.java
+│ │ ├── 📄 VisitorService.java
+│ │ └── 📄 WebCrawlerService.java
+│ └── 📁 resources
+│ ├── 📁 static
+│ │ ├── 📁 css
+│ │ │ ├── 📄 layout.css
+│ │ │ └── 📄 layout1.css
+│ │ └── 📁 img
+│ │ ├── 📁 btn
+│ │ │ ├── 📄 correction_btn.png
+│ │ │ └── 📄 delete_btn.png
+│ │ └── 📁 logo
+│ │ ├── 📄 google-logo.png
+│ │ ├── 📄 kakao-logo.png
+│ │ └── 📄 naver-logo.png
+│ └── 📁 templates
+│ ├── 📄 main.html
+│ ├── 📁 about
+│ │ └── 📄 about.html
+│ ├── 📁 admin
+│ │ └── 📄 admin.html
+│ ├── 📁 banner
+│ │ ├── 📄 bannerForm.html
+│ │ └── 📄 bannerList.html
+│ ├── 📁 buy
+│ │ └── 📄 buy.html
+│ ├── 📁 cart
+│ │ └── 📄 cartList.html
+│ ├── 📁 chat
+│ │ └── 📄 chatting.html
+│ ├── 📁 chatbot
+│ │ └── 📄 chatBot.html
+│ ├── 📁 crawling
+│ │ └── 📄 result.html
+│ ├── 📁 fragments
+│ │ ├── 📄 footer.html
+│ │ └── 📄 header.html
+│ ├── 📁 item
+│ │ ├── 📄 itemDtl.html
+│ │ └── 📄 itemForm.html
+│ ├── 📁 layouts
+│ │ └── 📄 layout.html
+│ ├── 📁 members
+│ │ ├── 📄 findEmail.html
+│ │ ├── 📄 findPassword.html
+│ │ ├── 📄 myPage.html
+│ │ ├── 📄 signin.html
+│ │ ├── 📄 signup.html
+│ │ └── 📄 updatePw.html
+│ ├── 📁 notice
+│ │ ├── 📄 noticeDtl.html
+│ │ ├── 📄 noticeForm.html
+│ │ └── 📄 noticeList.html
+│ ├── 📁 order
+│ │ └── 📄 orderHist.html
+│ ├── 📁 payment
+│ │ ├── 📄 failure.html
+│ │ └── 📄 success.html
+│ └── 📁 qnA
+│ ├── 📄 QuestionDtl.html
+│ ├── 📄 QuestionForm.html
+│ └── 📄 QuestionList.html
 
 ```
 
